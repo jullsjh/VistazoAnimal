@@ -3,7 +3,7 @@ from flask import Flask, request, abort
 #instanciamos la clase , creamos un nuevo objeto y le pasamos el __name__
 application = Flask(__name__)
 
-
+#hola julls
 #------------- 1. el @ se llama decorador, esto es una llamada http -------------
 @application.route("/", methods=['GET'])#esto es el endpoint raiz
 def hello_world():
