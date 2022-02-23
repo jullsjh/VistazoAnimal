@@ -77,7 +77,11 @@ def login():
     return "No se ha podido inciar sesion", 401
 
 
+
+
 #registro de usuario
+@application.route("/register", methods=['POST'])
+def register():
 
 
 
@@ -102,6 +106,10 @@ def get_users(user_id):
         return jsonify(usuarios), 200
     except Exception:
         return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
 
 
 

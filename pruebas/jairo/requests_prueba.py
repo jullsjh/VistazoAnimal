@@ -1,4 +1,5 @@
 import requests, json, os
+from flask import jsonify
 
 BASE_URL = 'http://127.0.0.1:5000/'
 path_base = os.path.dirname(os.path.abspath(__file__))
@@ -17,8 +18,9 @@ def crear_usuario():
     r = requests.post(f'{BASE_URL}comments',json=nuevo_usuario)
 
     if r.status_code == 200:
-        print("Se ha introducido el usuario correctamente")
-    return None
+        return r.json, 200
+    else:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
