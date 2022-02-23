@@ -1,10 +1,10 @@
 from turtle import update
 from pymongo import MongoClient
 client = MongoClient('mongodb://localhost:27017/?readPreference=primary&appname=MongoDB+Compass&ssl=false')
+
+
 # bbdd
 mongodb = client.python2a
-
-
 user = mongodb.find_one
 
 filter = {'name': 'Pepe'}
