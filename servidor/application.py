@@ -46,8 +46,8 @@ def search_animal():
     for animal in animales:
         print(animal)
     
-    return jsonify(animales), 200
-    # return animales
+    # return jsonify(animales), 200
+    return animales
 
 
 # ----------------------------- USUARIOS -----------------------------
