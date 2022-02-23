@@ -43,7 +43,10 @@ def check_auth(role):
             except Exception as e:
                 print(str(e))
                 abort(401)
-            
+            #comprobamos que el rol de el usuario no es mayor que el rol
+            #que hemos establecido el que recibe la funcion
+            #if token_data['type'] > role:
+                abort(401)
             return f(token_data['id'], *args, **kargs)
         return wrapper
     return decorator
@@ -52,7 +55,7 @@ def check_auth(role):
 
 @application.route("/", methods=['GET'])
 def hello_world():
-    return "<h1>Bienvenido a la API de vistazo animal</h1>"
+    return "<h1>API del zoologico levantada</h1>"
 
 #creacion del token en el login
 @application.route("/login", methods=['POST'])
@@ -74,18 +77,31 @@ def login():
     return "No se ha podido inciar sesion", 401
 
 
+#registro de usuario
 
 
-#creacion de usuarios
+
+
+
+
+
+
+
+
+#funciones de administrador
 @application.route('/users', methods=['POST'])
+#comprobamos que solo un admin puede conseguir todos los usuarios
 @check_auth(UserRole.ADMIN)
-def crear_usuario(user_id):
-    print(user_id)
-    usuarios = list(db.usuarios.find())
-    for usuario in usuarios:
-        print(usuario)
-    print("Has conseguido crear usuario")
-    return "<h1>Hola, World!</h1>"
+def get_users(user_id):
+    try:
+        #buscamos todos los usuarios dentro de la base de datos
+        usuarios = list(db.usuarios.find())
+        for usuario in usuarios:
+            print(usuario)
+        print("Has conseguido crear usuario")
+        return jsonify(usuarios), 200
+    except Exception:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 

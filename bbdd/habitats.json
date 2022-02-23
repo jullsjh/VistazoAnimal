@@ -1,0 +1,61 @@
+[{
+  "_id": {
+    "$oid": "621680b43c7b5b70d315d5cf"
+  },
+  "nombre ": "Pradera",
+  "id_habitat": 1
+},{
+  "_id": {
+    "$oid": "621681b33c7b5b70d315d5d3"
+  },
+  "nombre": "Acuario",
+  "id_habitat": 2
+},{
+  "_id": {
+    "$oid": "621681eb3c7b5b70d315d5d8"
+  },
+  "nombre": "ZonaPolar",
+  "id_habitat": 3
+},{
+  "_id": {
+    "$oid": "621682363c7b5b70d315d5d9"
+  },
+  "nombre": "Sabana",
+  "id_habitat": 4
+},{
+  "_id": {
+    "$oid": "621682543c7b5b70d315d5da"
+  },
+  "nombre": "Desierto",
+  "id_habitat": 5
+},{
+  "_id": {
+    "$oid": "621682703c7b5b70d315d5db"
+  },
+  "nombre ": "Bosque",
+  "id_habitat": 6
+},{
+  "_id": {
+    "$oid": "621682b53c7b5b70d315d5dd"
+  },
+  "nombre": "Montanna",
+  "id_habitat": 7
+},{
+  "_id": {
+    "$oid": "621682dc3c7b5b70d315d5de"
+  },
+  "nombre": "Delfinario",
+  "id_habitat": 8
+},{
+  "_id": {
+    "$oid": "6216831b3c7b5b70d315d5e0"
+  },
+  "nombre": "Primates",
+  "id_habitat": 9
+},{
+  "_id": {
+    "$oid": "6216835a3c7b5b70d315d5e1"
+  },
+  "nombre": "Aviario",
+  "id_habitat": "10"
+}]
