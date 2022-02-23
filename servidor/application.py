@@ -32,22 +32,6 @@ def all_animals():
 
 
 # Buscar 1 animal
-input_animal = input("Escribe nombre del animal que quieres buscar: \n")
-
-@application.route("/", methods=['GET'])
-def search_animal():
-    filter = {'name': input_animal}
-    projection = {
-        '_id': 0, 
-        'id_habitat': 0,
-        'id_especie': 0}
-
-    animales = list(mongodb.animales.find(filter, projection))
-    for animal in animales:
-        print(animal)
-    
-    # return jsonify(animales), 200
-    return animales
 
 
 # ----------------------------- USUARIOS -----------------------------
