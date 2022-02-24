@@ -8,7 +8,7 @@ Funcionalidad que tenemos que agregar a la aplicacion
 
 ------GETS-------
 
--Sistema de busqueda de animales  (Julls)
+-Sistema de busqueda de animales  (Julls) --> OK
 -recuperar animales segun su habitat (Julls)
 
 

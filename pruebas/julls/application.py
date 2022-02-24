@@ -13,8 +13,26 @@ application = Flask(__name__)
 mongodb = client.VistazoAnimal
 
 
+# -------------------------------- GET --------------------------------
+# 1
+@application.route("/all_animals", methods=['GET'])
+def all_animals():
+    # input_animal = 'bhjdawsvb' #input("Escribe nombre del animal que quieres buscar: \n")
+    filter = {}
+    projection = {
+        '_id': 0, 
+        'id_habitat': 0,
+        'id_especie': 0}
 
-# Buscar 1 animal
+    animales = list(mongodb.animales.find(filter, projection))
+    for animal in animales:
+        print(animal)
+    
+    return jsonify(animales), 200
+
+
+
+# 2
 @application.route('/search_animal/<string:input_animal>', methods=['GET'])
 def search_animal(input_animal):
     filter = {'nombre': input_animal}
@@ -30,8 +48,20 @@ def search_animal(input_animal):
 
 
 
+# 3
+@application.route('/search_animal_from_habitat/<string:input_habitat>', methods=['GET'])
+def search_animal_for_habitat(input_habitat):
+    filter = {'nombre': input_habitat}
+    projection = {
+        'id_habitat': 0}
 
+    habitat = mongodb.habitats.find(filter, projection)
+    respuesta = json_util.dumps(habitat)
 
+    return respuesta
+
+    # 1 for que recorra todos los animales
+    # 2 if que compare la variable donde esta guardad lo que ha metido el usu
 
 
 
