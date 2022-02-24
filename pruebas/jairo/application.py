@@ -79,6 +79,9 @@ def login():
 
 
 
+
+
+
 #registro de usuario
 #@application.route("/register", methods=['POST'])
 #def register():
