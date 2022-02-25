@@ -6,5 +6,12 @@ db = client.VistazoAnimal
 
 users = list(db.usuarios.find())
 
-for user in users:
-    print(users)
+filter = {
+        'nombre': 'Doro'
+    }
+projection = {
+        'pass': 0
+    }
+        #print(id)
+user = db.usuarios.find_one(filter,projection)
+print(user)
