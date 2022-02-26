@@ -1,6 +1,5 @@
 #imports
-from crypt import methods
-from http.client import NOT_FOUND
+from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
 from functools import wraps
@@ -126,7 +125,7 @@ def delete_user(user_id, id):
 
 
 #Modificar un usuario mediante su Id
-application.route('/users/<id>', methods=['PUT'])
+@application.route('/users/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
 def update_user(user_id, id):
     try:
@@ -143,7 +142,7 @@ def update_user(user_id, id):
             filter = {'_id': ObjectId(id)}
             update = {'$set': {
                 'nombre': nombre,
-                'apellid1': apellido1,
+                'apellido1': apellido1,
                 'apellido2': apellido2,
                 'email': email,
                 'telefono': telefono,
@@ -152,10 +151,10 @@ def update_user(user_id, id):
                 }}
             db.usuarios.update_one(filter, update)
             response = jsonify({'message': 'Usuario ' + id + ' Fue actualizado correctamente'})
-            response.status_code = 200
+            response.status_code = 201
+            return response
         else:
-            return NOT_FOUND()
-        return response
+            return  jsonify({'ERROR': 'No se pudo modificar el usuario'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
@@ -163,16 +162,103 @@ def update_user(user_id, id):
 
 
 
+#Registrar un nuevo usuario 
+@application.route('/users', methods=['POST'])
+def create_user():
+    try:
+        nombre = request.json['nombre']
+        apellido1 = request.json['apellido1']
+        apellido2 = request.json['apellido2']
+        email = request.json['email']
+        telefono = request.json['telefono']
+        password = request.json['pass']
+        
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if nombre and apellido1 and apellido2 and email and telefono and password and id:
+            hashed_password = generate_password_hash(password)
+            new_user = {
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+                'email': email,
+                'telefono': telefono,
+                'pass': hashed_password
+                }
+            db.usuarios.insert_one(new_user)
+            response = jsonify({
+                '_id': str(id),
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+                'email': email,
+                'telefono': telefono
+            })
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo crear el usuario'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
-#registro de usuario
-#@application.route("/register", methods=['POST'])
-#def register():
+
+#Registrar una nueva venta para el usuario que haya iniciado sesion
+@application.route('/users/sales', methods=['POST'])
+@check_auth(UserRole.SUPERADMIN)
+def create_venta(user_id):
+    try:
+        fecha = datetime.utcnow()
+        cantidad = request.json['cantidad']
+        if fecha and cantidad :
+            nueva_venta = {
+                'fecha': fecha,
+                'cantidad': cantidad,
+                'usuario_id': user_id
+            }
+            db.ventas.insert_one(nueva_venta)
+            response = jsonify({
+                'fecha': fecha,
+                'cantidad': cantidad,
+                'usuario_id': str(user_id),
+            })
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo modificar el usuario'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 
+
+#Recuperar todas las ventas del usuario logueado
+@application.route('/users/sales', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_sales(user_id):
+    try:
+        filter = {
+            '_id': ObjectId(user_id)
+        }
+        projection = {
+            'fecha': 1,
+            'cantidad': 1
+        }
+        ventas = db.find(filter, projection)
+        if ventas:
+            response = json_util.dumps(ventas)
+            response.status_code = 200
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener las ventas'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+#Recuperar todas las ventas de un usuario siendo administrador
 
 
 
