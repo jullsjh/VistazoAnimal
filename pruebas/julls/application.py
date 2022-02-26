@@ -1,6 +1,6 @@
 #importamos flask
 # from multiprocessing.connection import Client
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, Response
 from itsdangerous import json
 from pymongo import MongoClient
 from bson import json_util
@@ -51,14 +51,13 @@ def search_animal(input_animal):
 # 3
 @application.route('/search_animal_from_habitat/<string:input_habitat>', methods=['GET'])
 def search_animal_for_habitat(input_habitat):
-    filter = {'nombre': input_habitat}
-    projection = {
-        'id_habitat': 0}
+    filter = {'nombre': input_habitat }
 
-    habitat = mongodb.habitats.find(filter, projection)
+
+    habitat = mongodb.habitats.find(filter)
     respuesta = json_util.dumps(habitat)
 
-    return respuesta
+    return Response(respuesta, mimetype="application/json"), 200
 
     # 1 for que recorra todos los animales
     # 2 if que compare la variable donde esta guardad lo que ha metido el usu
