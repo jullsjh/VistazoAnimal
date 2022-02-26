@@ -28,6 +28,7 @@ def get_all_habitats():
         return []
     else:
         return r.json()
+        
 habitats = get_all_habitats()
 print(habitats)
 
