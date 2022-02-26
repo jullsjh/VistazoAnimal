@@ -2,7 +2,7 @@
   "_id": {
     "$oid": "621680b43c7b5b70d315d5cf"
   },
-  "nombre": "Pradera",
+  "nombre ": "Pradera",
   "id_habitat": 1
 },{
   "_id": {

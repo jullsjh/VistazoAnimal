@@ -1,4 +1,6 @@
 #imports
+from crypt import methods
+from http.client import NOT_FOUND
 from bson import json_util
 from bson.objectid import ObjectId
 from functools import wraps
@@ -123,10 +125,10 @@ def delete_user(user_id, id):
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
-#Modificar un usuario mediante si Id
-application.route('/users/<_id>', methods=['PUT'])
+#Modificar un usuario mediante su Id
+application.route('/users/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
-def update_user(user_id, _id):
+def update_user(user_id, id):
     try:
         nombre = request.json['nombre']
         apellido1 = request.json['apellido1']
@@ -135,9 +137,24 @@ def update_user(user_id, _id):
         telefono = request.json['telefono']
         password = request.json['pass']
         
-        db.usuarios.delete_one(filter)
-        response = jsonify({'message': 'Usuario ' + id + ' Eliminado Correctamente'})
-        response.status_code = 200
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if nombre and apellido1 and apellido2 and email and telefono and password and id:
+            hashed_password = generate_password_hash(password)
+            filter = {'_id': ObjectId(id)}
+            update = {'$set': {
+                'nombre': nombre,
+                'apellid1': apellido1,
+                'apellido2': apellido2,
+                'email': email,
+                'telefono': telefono,
+                'pass': hashed_password
+                
+                }}
+            db.usuarios.update_one(filter, update)
+            response = jsonify({'message': 'Usuario ' + id + ' Fue actualizado correctamente'})
+            response.status_code = 200
+        else:
+            return NOT_FOUND()
         return response
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
