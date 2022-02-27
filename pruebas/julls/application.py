@@ -16,7 +16,6 @@ mongodb = client.VistazoAnimal
 
 
 # -------------------------------- GET --------------------------------
-
 # --------- ANIMALES
 @application.route("/all_animals", methods=['GET'])
 def all_animals():
@@ -32,7 +31,6 @@ def all_animals():
     
     return jsonify(animales), 200
 
-
 @application.route('/search_animal/<string:input_animal>', methods=['GET'])
 def search_animal(input_animal):
     filter = {'nombre': input_animal}
@@ -45,7 +43,6 @@ def search_animal(input_animal):
     respuesta = json_util.dumps(animales)
 
     return respuesta
-
 
 @application.route('/animales/buscar_animal/<string:nombre>', methods=['GET'])
 def buscar_animal(nombre):
@@ -68,40 +65,155 @@ def buscar_animal(nombre):
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
+@application.route('/search_animals_from_habitat/<string:nombre>', methods=['GET'])
+# busco habitar por nombre
+def search_animals_from_habitat(nombre):
+    try: 
+        # devuelve todos los datos de 1 habitar
+        filter = {'nombre': nombre}
+        habitats = mongodb.habitats.find_one(filter)
+        # me quedo SOLO con el id_habitat de habitat buscado
+        filter2 = {'id_habitat': habitats['id_habitat']}
+        
+        animales = mongodb.animales.find(filter2)
+        respuesta = json_util.dumps(animales)
+        return respuesta
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 
-# 3 POR TERMINAR !!!!
-# de momento lo que deberia hacer es buscar habitat
-@application.route('/search_animals_from_habitat/<id>', methods=['GET'])
-def search_animal_from_habitat(id):
-    animals = all_animals()
-    animal_from_habitat = []
-
-    for animal in animals:
-        if ('id' == id):
-            animal_from_habitat.append(animal['id'])
 
 
-    filter = {'_id': ObjectId(id)}
 
 
-    habitat = mongodb.habitats.find(filter)
-    respuesta = json_util.dumps(habitat)
 
-    return Response(respuesta, mimetype="application/json"), 200
 
-    # 1 for que recorra todos los animales
-    # 2 if que compare la variable donde esta guardad lo que ha metido el usu
-    # array animales
+# --------- HABITATS
+@application.route("/habitats/all_habitats", methods=['GET'])
+def all_habitats():
+    filter = {}
+    projection = {'_id': 0}
+
+    habitats = list(mongodb.habitats.find(filter, projection))
+    for habitat in habitats:
+        print(habitat)
+    
+    return jsonify(habitats), 200
+
+@application.route('/habitats/buscar/<id>', methods=['GET'])
+def buscar_habitat(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        habitats = mongodb.habitats.find(filter)
+        respuesta = json_util.dumps(habitats)
+        return respuesta
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+
+# -------------------------------- POST --------------------------------
+# --------- ANIMALES
+@application.route('/animales/nuevo', methods=['POST'])
+def new_animal():
+    try: 
+        nombre = request.json['nombre']
+        new_animal = {
+            'nombre': nombre,
+            'tamanno': request.json['tamaño'],
+            'peso': request.json['peso'],
+            'id_habitat': request.json['id_habitat'],
+            'id_especie': request.json['id_especie']
+        }
+        mongodb.animales.insert_one(new_animal)
+        response = jsonify({'message': 'Animal con nombre: ' + nombre + ' --> Insertado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+# --------- HABITATS
+@application.route('/habitats/nuevo', methods=['POST'])
+def new_habitat():
+    try: 
+        nombre = request.json['nombre']
+        new_habitat = {
+            'nombre': nombre,
+            'id_habitat': request.json['id_habitat']
+        }
+        mongodb.habitats.insert_one(new_habitat)
+        response = jsonify({'message': 'Habitat con nombre: ' + nombre + ' --> Insertado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+# -------------------------------- PUT --------------------------------
+# --------- ANIMALES
+@application.route('/animales/actualizar/<id>', methods=['PUT'])
+def update_animal(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        update = {
+            '$set': {
+                'nombre': request.json['nombre'],
+                'tamanno': request.json['tamaño'],
+                'peso': request.json['peso'],
+                'id_habitat': request.json['id_habitat'],
+                'id_especie': request.json['id_especie']
+            }
+        }
+        mongodb.animales.update_one(filter, update)
+        response = jsonify({'message': 'Animal con id: ' + id + ' --> Actualizado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+# --------- HABBITATS
+@application.route('/habitats/actualizar/<id>', methods=['PUT'])
+def update_habitat(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        update = {
+            '$set': {
+                'nombre': request.json['nombre'],
+                'id_habitat': request.json['id_habitat']
+            }
+        }
+        mongodb.habitats.update_one(filter, update)
+        response = jsonify({'message': 'Habitat con id: ' + id + ' --> Actualizado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 
 
 # -------------------------------- DELETE --------------------------------
-
 # --------- ANIMALES
 @application.route('/animales/borrar_id/<id>', methods=['DELETE'])
 def delete_animal_from_id(id):
@@ -116,7 +228,6 @@ def delete_animal_from_id(id):
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
-
 @application.route('/animales/borrar_nombre/<string:nombre>', methods=['DELETE'])
 def delete_animal_from_name(nombre):
     try:
@@ -129,7 +240,6 @@ def delete_animal_from_name(nombre):
         return response
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
-
 
 # --------- HABITATS
 @application.route('/habitats/borrar_id/<id>', methods=['DELETE'])
@@ -148,58 +258,6 @@ def delete_habitat_from_id(id):
 
 
 
-# -------------------------------- PUT --------------------------------
-
-# --------- ANIMALES
-@application.route('/animales/actualizar/<id>', methods=['PUT'])
-def update_animal(id):
-    try:
-        filter = {
-            '_id': ObjectId(id)
-        }
-        update = {
-            '$set': {
-                'nombre': request.json['nombre'],
-                'tamanno': request.json['tamaño'],
-                'peso': request.json['peso'],
-                'id_habitat': request.json['id_habitat'],
-                'id_especie': request.json['id_especie']
-            }
-        }
-
-        mongodb.animales.update_one(filter, update)
-        response = jsonify({'message': 'Animal con id: ' + id + ' --> Actualizado Correctamente'})
-        response.status_code = 200
-        return response
-
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
-
-# --------- HABBITATS
-@application.route('/habitats/actualizar/<id>', methods=['PUT'])
-def update_habitat(id):
-    try:
-        filter = {
-            '_id': ObjectId(id)
-        }
-        update = {
-            '$set': {
-                'nombre': request.json['nombre'],
-                'id_habitat': request.json['id_habitat']
-            }
-        }
-
-        mongodb.habitats.update_one(filter, update)
-        response = jsonify({'message': 'Habitat con id: ' + id + ' --> Actualizado Correctamente'})
-        response.status_code = 200
-        return response
-
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
 
 
 
@@ -207,9 +265,10 @@ def update_habitat(id):
 # 0 se muestra todo menos eso
 # muestra lo que tiene 1
 # loads: json a dict
-
 # projection es las columnas del select --> 0: no muestra, 1: muestra
 # filter es el where
+
+
 
 
 
