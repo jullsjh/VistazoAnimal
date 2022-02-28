@@ -1,4 +1,5 @@
 #imports
+from sqlite3 import Date
 from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
@@ -53,6 +54,14 @@ def check_auth(role):
 @application.route("/", methods=['GET'])
 def hello_world():
     return "<h1>API del zoologico levantada</h1>"
+
+
+
+
+#--------------- Usuarios ---------------
+
+
+
 
 
 #Login de un usuario
@@ -203,10 +212,25 @@ def create_user():
 
 
 
+
+
+
+
+
+#--------------- Ventas ---------------
+
+
+
+
+
+
+
+
+
 #Registrar una nueva venta para el usuario que haya iniciado sesion
 @application.route('/users/sales', methods=['POST'])
 @check_auth(UserRole.SUPERADMIN)
-def create_venta(user_id):
+def create_sale(user_id):
     try:
         fecha = datetime.utcnow()
         cantidad = request.json['cantidad']
@@ -239,29 +263,239 @@ def create_venta(user_id):
 def get_sales(user_id):
     try:
         filter = {
-            '_id': ObjectId(user_id)
+            'usuario_id': user_id
         }
         projection = {
             'fecha': 1,
             'cantidad': 1
         }
-        ventas = db.find(filter, projection)
+        
+        ventas = db.ventas.find(filter, projection)      
         if ventas:
             response = json_util.dumps(ventas)
-            response.status_code = 200
-            return response
+            return Response(response, mimetype="application/json"), 200
         else:
             return  jsonify({'ERROR': 'No se pudo obtener las ventas'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','Error2': str(e)}), 400
+
+
+
+
+#Recuperar todas las ventas de un usuario mediante un id siendo administrador
+@application.route('/users/sales/<id>', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_sales_byId(user_id,id):
+    try:
+        filter = {
+            'usuario_id': id
+        }
+        projection = {
+            'fecha': 1,
+            'cantidad': 1
+        }
+        ventas = db.ventas.find(filter, projection)      
+        if ventas:
+            response = json_util.dumps(ventas)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener las ventas'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','Error2': str(e)}), 400
+
+
+
+
+
+#Borrar una venta mediante su id
+@application.route('/users/sales/<id>', methods=['DELETE'])
+@check_auth(UserRole.SUPERADMIN)
+def delete_sales_byId(user_id,id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }  
+        db.usuarios.delete_one(filter)
+        response = jsonify({'message': 'Venta con id:  ' + id + ' Ha sido eliminada Correctamente'})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Modificar una venta
+@application.route('/users/sales/<id>', methods=['PUT'])
+@check_auth(UserRole.SUPERADMIN)
+def update_sales(user_id, id):
+    try:
+        cantidad = request.json['cantidad']
+        #fecha es introduciad año/mes/dia ("2014,10,21")
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if cantidad :
+            filter = {'_id': ObjectId(id)}
+            update = {'$set': {
+                'cantidad': cantidad,
+                }}
+            db.ventas.update_one(filter, update)
+            response = jsonify({'message': 'Venta con id:  ' + id + ' Ha sido modificada Correctamente'})
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo modificar la venta'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR': str(e)}), 400
+
+
+
+
+
+
+
+
+
+
+#--------------- Especies ---------------
+
+
+
+
+
+
+
+
+
+#Registrar una nueva especie 
+@application.route('/species', methods=['POST'])
+@check_auth(UserRole.SUPERADMIN)
+def create_specie(user_id):
+    try:
+        nombre_cientifico = request.json['nombre_cientifico']
+        nombre_vulgar = request.json['nombre_vulgar']
+        descripcion = request.json['descripcion']
+        if nombre_cientifico and nombre_vulgar and descripcion :
+            nueva_especie = {
+                'nombre_cientifico': nombre_cientifico,
+                'nombre_vulgar': nombre_vulgar,
+                'descripcion': descripcion
+            }
+            db.especie.insert_one(nueva_especie)
+            response = jsonify({
+                'nombre_cientifico': nombre_cientifico,
+                'nombre_vulgar': nombre_vulgar,
+                'descripcion': descripcion
+            })
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo insertar la especie'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 
-#Recuperar todas las ventas de un usuario siendo administrador
+
+#Recuperar todas las especies
+@application.route('/species', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_species(user_id):
+    try:
+        especies = db.especie.find()      
+        if especies:
+            response = json_util.dumps(especies)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener las especies'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
+
+#Recuperar la especie mediante su id
+@application.route('/species/<id>', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_species_byId(user_id,id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        especies = db.especie.find(filter)      
+        if especies:
+            response = json_util.dumps(especies)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener la especie buscada'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Recuperar todos los animales de una especie mediante el nombre de la especie
+
+@application.route('/species/prueba/<string:nombre>', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_animals_by_specie(user_id,nombre):
+    try:
+        filter = {'nombre_vulgar': nombre}
+        especie_inf = db.especie.find_one(filter)
+        return json_util.dumps(especie_inf)
+        if especie_inf :
+            filter2 = {'especie_id': especie_inf[ObjectId(especie_inf['_id'])]}      
+            animales = db.animales.find(filter2)
+            response = json_util.dumps(animales)
+            return Response(response, mimetype="application/json"), 200
+        
+    except Exception as e:
+        return jsonify({'ERROR': str(e)}), 400
+
+
+
+#Eliminar una especie mediante su id
+@application.route('/species/<id>', methods=['DELETE'])
+@check_auth(UserRole.SUPERADMIN)
+def delete_species_byId(user_id,id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }  
+        db.especie.delete_one(filter)
+        response = jsonify({'message': 'Especie con id:  ' + id + ' Ha sido eliminada Correctamente'})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+#Modificar una especie mediante su id
+@application.route('/species/<id>', methods=['PUT'])
+@check_auth(UserRole.SUPERADMIN)
+def update_species(user_id, id):
+    try:
+        nombre_cientifico = request.json['nombre_cientifico']
+        nombre_vulgar = request.json['nombre_vulgar']
+        descripcion = request.json['descripcion']
+        if nombre_cientifico and nombre_vulgar and descripcion :
+            filter = {
+                '_id': ObjectId(id)
+            }
+            update = {'$set':{
+                'nombre_cientifico': nombre_cientifico,
+                'nombre_vulgar': nombre_vulgar,
+                'descripcion': descripcion
+                }
+            }
+            db.especie.update_one(filter,update)
+            response = jsonify({'message': 'Especie con id:  ' + id + ' Ha sido modificada correctamente'})
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo insertar la especie'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR': str(e)}), 400
 
 
 
