@@ -60,8 +60,16 @@ def search_animal_for_habitat(input_habitat):
 
     return respuesta
 
-    # 1 for que recorra todos los animales
-    # 2 if que compare la variable donde esta guardad lo que ha metido el usu
+
+
+# --------- COMIDAS
+# consultar comida
+# consulta a 2 tablas: ej que ha comido el caiman?
+@application.route('/comidas/<id>', methods=['GET'])
+def comida_animal(input_comida):
+    filter = { 'nombre': input_comida }
+    projection = { }
+
 
 
 
