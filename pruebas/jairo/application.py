@@ -1,4 +1,5 @@
 #imports
+import email
 from sqlite3 import Date
 from urllib import response
 from bson import json_util
@@ -25,10 +26,13 @@ application = Flask(__name__)
 
 TOKEN_KEY = 'top-secret'
 
-
+#Permisos de cada rol
+#-Superadmin puede realizar todas los requests
+#-Empleado puede recuperar,crear y editar todas las colecciones
+#-Usuario puede registrar ventas y recuperar todas las colecciones
 class UserRole(IntEnum):
     SUPERADMIN = 1
-    ADMIN = 5
+    EMPLEADO = 5
     USUARIO = 100
 
 
@@ -45,11 +49,14 @@ def check_auth(role):
             except Exception as e:
                 print(str(e))
                 abort(401)
-            #if token_data['type'] > role:
-                #abort(401)
+            if token_data['type'] > role:
+                return jsonify({'ERROR':'No tienes los permisos necesarios'}), 400
             return f(token_data['id'], *args, **kargs)
         return wrapper
     return decorator
+
+
+
 
 @application.route("/", methods=['GET'])
 def hello_world():
@@ -67,20 +74,23 @@ def hello_world():
 #Login de un usuario
 @application.route("/login", methods=['POST'])
 def login():
+    email = request.form['email']
+    password = request.form['pass']
     filter = {
-        'email': request.form['email'],
-        'pass': request.form['pass']
+        'email': email,
+        'pass': password
     }
     user = db.usuarios.find_one(filter)
     if user:
         token_data = {
             'id': str(user['_id']),
-            'exp': datetime.utcnow() + timedelta(seconds=10800)
+            'exp': datetime.utcnow() + timedelta(seconds=10800),
+            'type': user['type']
         }
         token = jwt.encode(token_data, TOKEN_KEY, algorithm='HS256')
         return jsonify({'token':token}), 200
     else:
-        return "No se ha podido inciar sesion", 401
+        return jsonify({'ERROR':'No se ha podido iniciar sesión, correo/contraseña incorrectos'}), 401
 
 
 
@@ -96,7 +106,7 @@ def create_user():
         email = request.json['email']
         telefono = request.json['telefono']
         password = request.json['password']
-        
+        type_user = request.json['type']
         filter = {
             'email': email,
             'pass': generate_password_hash(password)
@@ -113,7 +123,8 @@ def create_user():
                 'apellido2': apellido2,
                 'email': email,
                 'telefono': telefono,
-                'pass': hashed_password
+                'pass': hashed_password,
+                'type': type_user
                 }
             db.usuarios.insert_one(new_user)
             response = jsonify({
@@ -122,7 +133,8 @@ def create_user():
                 'apellido1': apellido1,
                 'apellido2': apellido2,
                 'email': email,
-                'telefono': telefono
+                'telefono': telefono,
+                'type': type_user
             })
             response.status_code = 201
             return response
@@ -136,20 +148,21 @@ def create_user():
 
 #Conseguir todos los usuarios
 @application.route('/users', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def get_users(user_id):
     try:
         users = db.usuarios.find()
         response = json_util.dumps(users)
+        
         return Response(response, mimetype="application/json"), 200
     except Exception:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'No se pudieron obtener los usuarios'}), 400
 
 
 
 #Obtener usuario mediante id
 @application.route('/users/<id>', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def get_user_byId(user_id,id):
     try:
         filter = {
@@ -159,11 +172,14 @@ def get_user_byId(user_id,id):
             'pass': 0
         }
         #print(id)
-        user = db.usuarios.find_one(filter,projection)
-        response = json_util.dumps(user)
-        return Response(response, mimetype="application/json"), 200
+        if db.usuarios.find_one(filter,projection):
+            user = db.usuarios.find_one(filter,projection)
+            response = json_util.dumps(user)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return jsonify({'ERROR': 'id no existente dentro de la base de datos'}), 400
     except Exception:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'id no existente dentro de la base de datos'}), 400
 
 
 
@@ -180,20 +196,23 @@ def delete_user(user_id, id):
         response.status_code = 200
         return response
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'No se pudo eliminar el usuario'}), 400
 
 
 #Modificar un usuario mediante su Id
 @application.route('/users/<id>', methods=['PUT'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def update_user(user_id, id):
     try:
-        nombre = request.json['nombre']
-        apellido1 = request.json['apellido1']
-        apellido2 = request.json['apellido2']
-        email = request.json['email']
-        telefono = request.json['telefono']
-        password = request.json['pass']
+        data = request.json()
+
+        nombre = data['nombre']
+        apellido1 = data['apellido1']
+        apellido2 = data['apellido2']
+        email = data['email']
+        telefono = data['telefono']
+        password = data['pass']
+        type_user = data['type']
         
         #['$oid']) if '$oid' in id else ObjectId(id) 
         if nombre and apellido1 and apellido2 and email and telefono and password and id:
@@ -205,15 +224,15 @@ def update_user(user_id, id):
                 'apellido2': apellido2,
                 'email': email,
                 'telefono': telefono,
-                'pass': hashed_password
-                
+                'pass': hashed_password,
+                'type': type_user
                 }}
             db.usuarios.update_one(filter, update)
             response = jsonify({'message': 'Usuario ' + id + ' Fue actualizado correctamente'})
             response.status_code = 201
             return response
         else:
-            return  jsonify({'ERROR': 'No se pudo modificar el usuario'})
+            return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
@@ -243,7 +262,7 @@ def update_user(user_id, id):
 
 #Registrar una nueva venta para el usuario que haya iniciado sesion
 @application.route('/users/sales', methods=['POST'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.USUARIO)
 def create_sale(user_id):
     try:
         fecha = datetime.utcnow()
@@ -273,7 +292,7 @@ def create_sale(user_id):
 
 #Recuperar todas las ventas del usuario logueado
 @application.route('/users/sales', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.USUARIO)
 def get_sales(user_id):
     try:
         filter = {
@@ -296,9 +315,9 @@ def get_sales(user_id):
 
 
 
-#Recuperar todas las ventas de un usuario mediante un id siendo administrador
+#Recuperar todas las ventas de un usuario mediante un id siendo empleado/administrador
 @application.route('/users/sales/<id>', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def get_sales_byId(user_id,id):
     try:
         filter = {
@@ -323,7 +342,7 @@ def get_sales_byId(user_id,id):
 
 #Borrar una venta mediante su id
 @application.route('/users/sales/<id>', methods=['DELETE'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def delete_sales_byId(user_id,id):
     try:
         filter = {
@@ -340,7 +359,7 @@ def delete_sales_byId(user_id,id):
 
 #Modificar una venta
 @application.route('/users/sales/<id>', methods=['PUT'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def update_sales(user_id, id):
     try:
         cantidad = request.json['cantidad']
@@ -381,7 +400,7 @@ def update_sales(user_id, id):
 
 #Registrar una nueva especie 
 @application.route('/species', methods=['POST'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def create_specie(user_id):
     try:
         nombre_cientifico = request.json['nombre_cientifico']
@@ -412,7 +431,7 @@ def create_specie(user_id):
 
 #Recuperar todas las especies
 @application.route('/species', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def get_species(user_id):
     try:
         especies = db.especie.find()      
@@ -429,7 +448,7 @@ def get_species(user_id):
 
 #Recuperar la especie mediante su id
 @application.route('/species/<id>', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def get_species_byId(user_id,id):
     try:
         filter = {
@@ -446,29 +465,30 @@ def get_species_byId(user_id,id):
 
 
 
-#Recuperar todos los animales de una especie mediante el nombre de la especie
 
-@application.route('/species/prueba/<string:nombre>', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
+#Recuperar todos los animales de una especie mediante el nombre de la especie
+@application.route('/species/find/<string:nombre>', methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
 def get_animals_by_specie(user_id,nombre):
     try:
         filter = {'nombre_vulgar': nombre}
         especie_inf = db.especie.find_one(filter)
-        return json_util.dumps(especie_inf)
+        #return json_util.dumps(especie_inf)
         if especie_inf :
-            filter2 = {'especie_id': especie_inf[ObjectId(especie_inf['_id'])]}      
+            especie_id = especie_inf['_id']
+            filter2 = {'especie_id': str(especie_id)} 
             animales = db.animales.find(filter2)
             response = json_util.dumps(animales)
             return Response(response, mimetype="application/json"), 200
-        
     except Exception as e:
         return jsonify({'ERROR': str(e)}), 400
 
 
 
+
 #Eliminar una especie mediante su id
 @application.route('/species/<id>', methods=['DELETE'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def delete_species_byId(user_id,id):
     try:
         filter = {
@@ -486,7 +506,7 @@ def delete_species_byId(user_id,id):
 
 #Modificar una especie mediante su id
 @application.route('/species/<id>', methods=['PUT'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.EMPLEADO)
 def update_species(user_id, id):
     try:
         nombre_cientifico = request.json['nombre_cientifico']

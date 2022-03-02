@@ -39,7 +39,6 @@ def crear_usuario():
     email = input("Introduzca su email: \n")
     telefono = input("Introduzca su telefono: \n")
     password = input("Introduzca una contraseña: \n")
-
     nuevo_usuario = {
         'nombre': nombre,
         'apellido1': apellido1,
