@@ -8,6 +8,9 @@ salt = os.urandom(32)
 plaintext = 'hellow0rld'.encode()
 # sha256, password, salt, longitud de la passw
 digest = hashlib.pbkdf2_hmac('sha1', plaintext, salt, 10000)
+
+
+
 hex_hash = digest.hex()
 print(hex_hash)
 byte_hash = digest.fromhex(digest.hex())
@@ -17,7 +20,7 @@ byte_hash = digest.fromhex(digest.hex())
 pass2 = 'hellow0rld'.encode()
 digest2 = hashlib.pbkdf2_hmac('sha1', pass2, salt, 10000)
 hex_hash2 = digest2.hex()
-print(hex_hash2)
+print(digest2)
 
 # 3 no entiendo bien esta manera xq da algo diferente
 # dk = hashlib.pbkdf2_hmac('sha1', b'hellow0rld', b'salt', 10000)

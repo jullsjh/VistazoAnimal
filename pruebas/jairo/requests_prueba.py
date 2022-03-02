@@ -1,5 +1,5 @@
+import email
 import requests, json, os
-from flask import jsonify
 
 BASE_URL = 'http://127.0.0.1:5000/'
 path_base = os.path.dirname(os.path.abspath(__file__))
@@ -29,26 +29,33 @@ def login_usuario():
 
 
 
+
 #request para registrar un usuario
 def crear_usuario():
     print("------------Registro de usuarios------------")
-    email_usuario = input("Introduzca un email para crear su cuenta: \n")
-    pass_usuario = input("Introduzca una contraseña para la cuenta \n")
+    nombre = input("Introduzca un nombre: \n")
+    apellido1 = input("Introduzca su primer apellido: \n")
+    apellido2 = input("Introduzca su segundo apellido: \n")
+    email = input("Introduzca su email: \n")
+    telefono = input("Introduzca su telefono: \n")
+    # password = input("Introduzca una contraseña: \n")
 
     nuevo_usuario = {
-        'email': email_usuario,
-        'pass': pass_usuario
+        'nombre': nombre,
+        'apellido1': apellido1,
+        'apellido2': apellido2,
+        'email': email,
+        'telefono': telefono
+        # 'password': password
     }
-
-    r = requests.post(f'{BASE_URL}comments',json=nuevo_usuario)
-
+    r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
     if r.status_code == 200:
-        return r.json, 200
+        return r.json
     else:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return {'ERROR': 'Error desconocido'}
 
 
 
 
 
-login_usuario()
+crear_usuario()

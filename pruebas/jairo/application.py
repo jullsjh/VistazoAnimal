@@ -84,6 +84,48 @@ def login():
 
 
 
+
+#Registrar un nuevo usuario 
+@application.route('/users', methods=['POST'])
+def create_user():
+    try:
+        nombre = request.json['nombre']
+        apellido1 = request.json['apellido1']
+        apellido2 = request.json['apellido2']
+        email = request.json['email']
+        telefono = request.json['telefono']
+        password = request.json['pass']
+        
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if nombre and apellido1 and apellido2 and email and telefono and password and id:
+            hashed_password = generate_password_hash(password)
+            new_user = {
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+                'email': email,
+                'telefono': telefono,
+                'pass': hashed_password
+                }
+            db.usuarios.insert_one(new_user)
+            response = jsonify({
+                '_id': str(id),
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+                'email': email,
+                'telefono': telefono
+            })
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo crear el usuario'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
 #Conseguir todos los usuarios
 @application.route('/users', methods=['GET'])
 @check_auth(UserRole.SUPERADMIN)
@@ -171,43 +213,7 @@ def update_user(user_id, id):
 
 
 
-#Registrar un nuevo usuario 
-@application.route('/users', methods=['POST'])
-def create_user():
-    try:
-        nombre = request.json['nombre']
-        apellido1 = request.json['apellido1']
-        apellido2 = request.json['apellido2']
-        email = request.json['email']
-        telefono = request.json['telefono']
-        password = request.json['pass']
-        
-        #['$oid']) if '$oid' in id else ObjectId(id) 
-        if nombre and apellido1 and apellido2 and email and telefono and password and id:
-            hashed_password = generate_password_hash(password)
-            new_user = {
-                'nombre': nombre,
-                'apellido1': apellido1,
-                'apellido2': apellido2,
-                'email': email,
-                'telefono': telefono,
-                'pass': hashed_password
-                }
-            db.usuarios.insert_one(new_user)
-            response = jsonify({
-                '_id': str(id),
-                'nombre': nombre,
-                'apellido1': apellido1,
-                'apellido2': apellido2,
-                'email': email,
-                'telefono': telefono
-            })
-            response.status_code = 201
-            return response
-        else:
-            return  jsonify({'ERROR': 'No se pudo crear el usuario'})
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+
 
 
 
