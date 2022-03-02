@@ -89,13 +89,21 @@ def login():
 @application.route('/users', methods=['POST'])
 def create_user():
     try:
+        #data = request.json()
         nombre = request.json['nombre']
         apellido1 = request.json['apellido1']
         apellido2 = request.json['apellido2']
         email = request.json['email']
         telefono = request.json['telefono']
-        password = request.json['pass']
+        password = request.json['password']
         
+        filter = {
+            'email': email,
+            'pass': generate_password_hash(password)
+        }
+        user = db.usuarios.find_one(filter)
+        if user:
+            return  jsonify({'ERROR': 'Ese correo ya este registrado'})
         #['$oid']) if '$oid' in id else ObjectId(id) 
         if nombre and apellido1 and apellido2 and email and telefono and password and id:
             hashed_password = generate_password_hash(password)
@@ -119,7 +127,7 @@ def create_user():
             response.status_code = 201
             return response
         else:
-            return  jsonify({'ERROR': 'No se pudo crear el usuario'})
+            return  jsonify({'ERROR': 'No se pudo crear el usuario falta algun dato por introducir'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 

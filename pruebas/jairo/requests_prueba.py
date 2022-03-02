@@ -38,15 +38,15 @@ def crear_usuario():
     apellido2 = input("Introduzca su segundo apellido: \n")
     email = input("Introduzca su email: \n")
     telefono = input("Introduzca su telefono: \n")
-    # password = input("Introduzca una contraseña: \n")
+    password = input("Introduzca una contraseña: \n")
 
     nuevo_usuario = {
         'nombre': nombre,
         'apellido1': apellido1,
         'apellido2': apellido2,
         'email': email,
-        'telefono': telefono
-        # 'password': password
+        'telefono': telefono,
+        'password': password
     }
     r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
     if r.status_code == 200:
@@ -58,4 +58,4 @@ def crear_usuario():
 
 
 
-crear_usuario()
+print(crear_usuario())
