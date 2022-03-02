@@ -1,0 +1,5 @@
+[{"id":{"$oid":"621f68a7fc13ae57ae000014"},"nombre":"Peces","cantidad":34},
+{"id":{"$oid":"621f68a7fc13ae57ae000015"},"nombre":"Filete","cantidad":42},
+{"id":{"$oid":"621f68a7fc13ae57ae000016"},"nombre":"Lechuga","cantidad":1},
+{"id":{"$oid":"621f68a7fc13ae57ae000017"},"nombre":"Pineso","cantidad":58},
+{"id":{"$oid":"621f68a7fc13ae57ae000018"},"nombre":"Galletas","cantidad":31}]
