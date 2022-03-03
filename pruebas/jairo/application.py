@@ -207,35 +207,41 @@ def delete_user(user_id, id):
 def update_user(user_id, id):
     try:
         filter = {
-            '_id': ObjectId(id)
+            '_id': ObjectId(str(id))
         }
         user = db.usuarios.find_one(filter)
         data = request.json()
         if 'nombre' not in data:
             nombre = user['nombre']
-        nombre = data['nombre']
+        else:
+            nombre = data['nombre']
         if 'apellido1' not in data:
             apellido1 = user['apellido1']
-        apellido1 = data['apellido1']
+        else:
+            apellido1 = data['apellido1']
         if 'apellido2' not in data:
             apellido2 = user['apellido2']
-        apellido2 = data['apellido2']
+        else:
+            apellido2 = data['apellido2']
         if 'email' not in data:
             email = user['email']
-        email = data['email']
+        else:
+            email = data['email']
         if 'telefono' not in data:
             telefono = user['telefono']
-        telefono = data['telefono']
+        else:
+            telefono = data['telefono']
         if 'password' not in data:
             password = user['pass']
-        password = data['pass']
+        else:
+            password = data['pass']
         if 'type' not in data:
             type_user = user['type']
-        type_user = data['type']
+        else:
+            type_user = data['type']
         #['$oid']) if '$oid' in id else ObjectId(id) 
-        if nombre and apellido1 and apellido2 and email and telefono and password and id:
+        #if nombre and apellido1 and apellido2 and email and telefono and password and type_user:
             hashed_password = generate_password_hash(password)
-            filter = {'_id': ObjectId(id)}
             update = {'$set': {
                 'nombre': nombre,
                 'apellido1': apellido1,
@@ -249,7 +255,7 @@ def update_user(user_id, id):
             response = jsonify({'message': 'Usuario ' + id + ' Fue actualizado correctamente'})
             response.status_code = 201
             return response
-        else:
+        #else:
             return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
