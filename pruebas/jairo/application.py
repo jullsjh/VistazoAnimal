@@ -74,24 +74,26 @@ def hello_world():
 #Login de un usuario
 @application.route("/login", methods=['POST'])
 def login():
-    email = request.form['email']
-    password = request.form['pass']
-    filter = {
-        'email': email,
-        'pass': password
-    }
-    user = db.usuarios.find_one(filter)
-    if user:
-        token_data = {
-            'id': str(user['_id']),
-            'exp': datetime.utcnow() + timedelta(seconds=10800),
-            'type': user['type']
+    try:
+        email = request.form['email']
+        password = request.form['pass']
+        filter = {
+            'email': email,
+            'pass': password
         }
-        token = jwt.encode(token_data, TOKEN_KEY, algorithm='HS256')
-        return jsonify({'token':token}), 200
-    else:
-        return jsonify({'ERROR':'No se ha podido iniciar sesión, correo/contraseña incorrectos'}), 401
-
+        user = db.usuarios.find_one(filter)
+        if user:
+            token_data = {
+                'id': str(user['_id']),
+                'exp': datetime.utcnow() + timedelta(seconds=10800),
+                'type': user['type']
+            }
+            token = jwt.encode(token_data, TOKEN_KEY, algorithm='HS256')
+            return jsonify({'token':token}), 200
+        else:
+            return jsonify({'ERROR':'No se ha podido iniciar sesión, correo/contraseña incorrectos'}), 401
+    except Exception as e:
+        return jsonify({'ERROR': 'No se ha podido iniciar sesión'}), 400
 
 
 
@@ -113,7 +115,7 @@ def create_user():
         }
         user = db.usuarios.find_one(filter)
         if user:
-            return  jsonify({'ERROR': 'Ese correo ya este registrado'})
+            return jsonify({'ERROR': 'Ese correo ya este registrado'})
         #['$oid']) if '$oid' in id else ObjectId(id) 
         if nombre and apellido1 and apellido2 and email and telefono and password and id:
             hashed_password = generate_password_hash(password)
@@ -201,19 +203,35 @@ def delete_user(user_id, id):
 
 #Modificar un usuario mediante su Id
 @application.route('/users/<id>', methods=['PUT'])
-@check_auth(UserRole.EMPLEADO)
+@check_auth(UserRole.SUPERADMIN)
 def update_user(user_id, id):
     try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        user = db.usuarios.find_one(filter)
         data = request.json()
-
+        if 'nombre' not in data:
+            nombre = user['nombre']
         nombre = data['nombre']
+        if 'apellido1' not in data:
+            apellido1 = user['apellido1']
         apellido1 = data['apellido1']
+        if 'apellido2' not in data:
+            apellido2 = user['apellido2']
         apellido2 = data['apellido2']
+        if 'email' not in data:
+            email = user['email']
         email = data['email']
+        if 'telefono' not in data:
+            telefono = user['telefono']
         telefono = data['telefono']
+        if 'password' not in data:
+            password = user['pass']
         password = data['pass']
+        if 'type' not in data:
+            type_user = user['type']
         type_user = data['type']
-        
         #['$oid']) if '$oid' in id else ObjectId(id) 
         if nombre and apellido1 and apellido2 and email and telefono and password and id:
             hashed_password = generate_password_hash(password)
@@ -234,8 +252,7 @@ def update_user(user_id, id):
         else:
             return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
 
 
 

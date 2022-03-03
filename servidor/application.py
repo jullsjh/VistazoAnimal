@@ -452,7 +452,6 @@ def get_animals_by_specie(user_id,nombre):
             animales = db.animales.find(filter2)
             response = json_util.dumps(animales)
             return Response(response, mimetype="application/json"), 200
-        
     except Exception as e:
         return jsonify({'ERROR': str(e)}), 400
 

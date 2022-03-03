@@ -15,5 +15,6 @@ projection = {
 }
 ventas = list(db.ventas.find(filter, projection))
 
-for v in ventas:
-    print(v)
+user = db.usuarios.find_one(filter)
+
+print(user['name'])
