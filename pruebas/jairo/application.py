@@ -1,6 +1,6 @@
 #imports
-import email
 from sqlite3 import Date
+from textwrap import indent
 from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
@@ -77,9 +77,10 @@ def login():
     try:
         email = request.form['email']
         password = request.form['pass']
+        hashed_password = generate_password_hash(password)
         filter = {
             'email': email,
-            'pass': password
+            'pass': hashed_password
         }
         user = db.usuarios.find_one(filter)
         if user:
@@ -201,16 +202,17 @@ def delete_user(user_id, id):
         return jsonify({'ERROR': 'No se pudo eliminar el usuario'}), 400
 
 
+
 #Modificar un usuario mediante su Id
 @application.route('/users/<id>', methods=['PUT'])
-@check_auth(UserRole.SUPERADMIN)
+@check_auth(UserRole.USUARIO)
 def update_user(user_id, id):
     try:
+        data = request.get_json()
         filter = {
             '_id': ObjectId(str(id))
         }
         user = db.usuarios.find_one(filter)
-        data = request.json()
         if 'nombre' not in data:
             nombre = user['nombre']
         else:
@@ -240,7 +242,7 @@ def update_user(user_id, id):
         else:
             type_user = data['type']
         #['$oid']) if '$oid' in id else ObjectId(id) 
-        #if nombre and apellido1 and apellido2 and email and telefono and password and type_user:
+        if nombre and apellido1 and apellido2 and email and telefono and password and type_user:
             hashed_password = generate_password_hash(password)
             update = {'$set': {
                 'nombre': nombre,
@@ -255,14 +257,10 @@ def update_user(user_id, id):
             response = jsonify({'message': 'Usuario ' + id + ' Fue actualizado correctamente'})
             response.status_code = 201
             return response
-        #else:
+        else:
             return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
-
-
-
-
 
 
 
@@ -421,7 +419,7 @@ def update_sales(user_id, id):
 
 
 
-#Registrar una nueva especie 
+#Crear una nueva especie 
 @application.route('/species', methods=['POST'])
 @check_auth(UserRole.EMPLEADO)
 def create_specie(user_id):
@@ -556,6 +554,54 @@ def update_species(user_id, id):
 
 
 
+#Introducir varios animales y asignarles sus datos correspondientes
+@application.route('/species/create', methods=['POST'])
+@check_auth(UserRole.EMPLEADO)
+def create_animals(user_id):
+    try:
+        data_list = []
+        data = request.get_json()
+        data_list.append(data)
+        cont = 0
+        for d in data_list:
+            cont += 1
+            #recuperar el id de de la especie
+            filter = {
+                'nombre' : d['animal' + str(cont)]['nombre_especie']
+            }
+            projection = {
+                '_id': 1
+            }
+            id_especie = db.especie.find_one(filter,projection)
+            #recuperar el id del habitat
+            filter = {
+                'nombre' : d['animal' + str(cont)]['nombre_habitat']
+            }
+            projection = {
+                '_id': 1
+            }
+            id_habitat = db.habitats.find_one(filter,projection)
+
+            new_animal = {
+                'nombre': d['animal' + str(cont)]['nombre'],
+                'tamanno': d['animal' + str(cont)]['tamanno'],
+                'peso': d['animal' + str(cont)]['peso'],
+                'habitat_id': id_habitat,
+                'especie_id': id_especie
+                }
+            
+            filter_animal = {
+                'nombre': d['animal' + str(cont)]['nombre']
+            }
+
+            animal_repetido = db.animales.find_one(filter_animal)
+            if animal_repetido:
+                print(jsonify({'ERROR':'Animal ya existente'}))
+            else:
+                db.eecie.insert_one(new_animal)
+        return "ha ido todo bien"
+    except Exception as e:
+        return jsonify({'ERROR': 'No se han podido introducir los animales'})
 
 
 
@@ -569,10 +615,7 @@ def update_species(user_id, id):
 
 
 
-
-
-
-
+#--------------- Veterinarios ---------------
 
 
 
