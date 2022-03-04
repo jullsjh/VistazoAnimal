@@ -590,7 +590,7 @@ def create_species(user_id):
                 'especie_id': especie['_id']
                 }
             result = db.animales.insert_one(new_animal)
-        return jsonify({'OK':'Se han podido ingresar los animales'})
+        return jsonify({'OK':'Se han podido ingresar los animales'}), 201
     except Exception as e:
         return jsonify({'ERROR': 'No se ha podido crear la lista de animales'}), 400
 
@@ -603,7 +603,49 @@ def create_species(user_id):
 #--------------- VETERINARIOS ---------------
 
 
+#Obtener veterinario por id 
 
+
+
+#crear veterinario asiganando su especie correspondiente
+@application.route('/veterinary', methods=['POST'])
+@check_auth(UserRole.EMPLEADO)
+def create_veterinary(user_id):
+    try:
+        filter = {
+            'nombre': data['especie_nombre']
+        }
+        projection  = {
+            '_id':1
+        }
+        especie = db.especies.find_one(filter,projection)
+        data = request.get_json()
+        nombre = data['nombre']
+        apellido1 = data['apellido1']
+        apellido2 = data['apellido2']
+        especie_id = especie['_id']
+        estado = data['estado']
+        if nombre and apellido1 and apellido2 and especie_id and estado:
+            nuevo_veterinario = {
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+                'especie_id': especie_id
+            }
+            filter_vet = {
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+            }
+            repetido = db.veterinarios.find_one(filter_vet)
+            if repetido:
+                return jsonify({'ERROR':'Registro repetido'}), 400
+            else:
+                result = db.veterinarios.insert_one(nuevo_veterinario)
+            if result.inserted_id:
+                return jsonify({'OK':'Se ha insertado el veterinario correctamente'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 

@@ -1,0 +1,30 @@
+#plantillas de datos para enviar API
+
+#lita de animales con todos sus datos
+[
+    {
+        "nombre":"lince",
+        "tamanno": 400,
+        "peso": 75,
+        "nombre_especie": "mammalia",
+        "nombre_habitat": "Acuario"
+    },
+    {
+        "nombre":"caiman",
+        "tamanno": 500,
+        "peso": 90,
+        "nombre_especie": "amphibia",
+        "nombre_habitat": "Desierto"
+    }
+]
+
+
+
+#insertar un veterinario
+{
+	"nombre": "Cesar",
+	"apellido1": "Diaz",
+	"apellido2": "Diaz",
+	"especie_nombre": "mammalia",
+	"estado": "disponible"
+}
