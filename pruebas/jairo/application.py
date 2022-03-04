@@ -603,11 +603,52 @@ def create_species(user_id):
 #--------------- VETERINARIOS ---------------
 
 
+
+
 #Obtener veterinario por id 
+@application.route('/veterinary/<id>', methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def get_veterinary_byId(user_id,id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        veterinario = db.veterinarios.find(filter)      
+        if veterinario:
+            response = json_util.dumps(veterinario)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener el veterinario buscada'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
-#crear veterinario asiganando su especie correspondiente
+
+#Obtener todos los veterinarios
+@application.route('/veterinary', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_veterinary_byId(user_id,id):
+    try:
+        veterinario = db.veterinarios.find(filter)      
+        if veterinario:
+            response = json_util.dumps(veterinario)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener el veterinario buscada'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+#Eliminar un usuario por id
+
+
+
+
+#crear veterinario asignando su especie correspondiente
 @application.route('/veterinary', methods=['POST'])
 @check_auth(UserRole.EMPLEADO)
 def create_veterinary(user_id):
