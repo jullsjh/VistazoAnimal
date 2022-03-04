@@ -1,6 +1,5 @@
 #imports
 from sqlite3 import Date
-from textwrap import indent
 from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
@@ -77,10 +76,9 @@ def login():
     try:
         email = request.form['email']
         password = request.form['pass']
-        hashed_password = generate_password_hash(password)
         filter = {
             'email': email,
-            'pass': hashed_password
+            'pass': password
         }
         user = db.usuarios.find_one(filter)
         if user:
@@ -202,17 +200,16 @@ def delete_user(user_id, id):
         return jsonify({'ERROR': 'No se pudo eliminar el usuario'}), 400
 
 
-
-#Modificar un usuario mediante su Id
+#Modificar un usuario mediante su id
 @application.route('/users/<id>', methods=['PUT'])
-@check_auth(UserRole.USUARIO)
+@check_auth(UserRole.SUPERADMIN)
 def update_user(user_id, id):
     try:
-        data = request.get_json()
         filter = {
             '_id': ObjectId(str(id))
         }
         user = db.usuarios.find_one(filter)
+        data = request.get_json()
         if 'nombre' not in data:
             nombre = user['nombre']
         else:
@@ -261,6 +258,10 @@ def update_user(user_id, id):
             return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
+
+
+
+
 
 
 
@@ -554,54 +555,52 @@ def update_species(user_id, id):
 
 
 
-#Introducir varios animales y asignarles sus datos correspondientes
+#--------------- ANIMALES ---------------
+
+#registrar varios animales con todos sus datos
 @application.route('/species/create', methods=['POST'])
 @check_auth(UserRole.EMPLEADO)
-def create_animals(user_id):
+def create_species(user_id):
     try:
-        data_list = []
-        data = request.get_json()
-        data_list.append(data)
-        cont = 0
-        for d in data_list:
-            cont += 1
+        json_data = request.get_json()
+        for data in json_data:
             #recuperar el id de de la especie
-            filter = {
-                'nombre' : d['animal' + str(cont)]['nombre_especie']
+            filter_especie = {
+                'nombre_cientifico' : data['nombre_especie']
             }
-            projection = {
+            projection_especie = {
                 '_id': 1
             }
-            id_especie = db.especie.find_one(filter,projection)
+            especie = db.especies.find_one(filter_especie, projection_especie)
             #recuperar el id del habitat
-            filter = {
-                'nombre' : d['animal' + str(cont)]['nombre_habitat']
+            filter_habitat = {
+                'nombre' : data['nombre_habitat']
             }
-            projection = {
+            projection_habitat = {
                 '_id': 1
             }
-            id_habitat = db.habitats.find_one(filter,projection)
-
-            new_animal = {
-                'nombre': d['animal' + str(cont)]['nombre'],
-                'tamanno': d['animal' + str(cont)]['tamanno'],
-                'peso': d['animal' + str(cont)]['peso'],
-                'habitat_id': id_habitat,
-                'especie_id': id_especie
+            habitat = db.habitats.find_one(filter_habitat, projection_habitat)
+            if especie is None or habitat is None:
+                return jsonify({'ERROR':'Ha habido un problema con el nombre de habitat/especie'})
+            new_animal = { 
+                'nombre': data['nombre'],
+                'tamanno': data['tamanno'],
+                'peso': data['peso'],
+                'habitat_id': habitat['_id'],
+                'especie_id': especie['_id']
                 }
-            
-            filter_animal = {
-                'nombre': d['animal' + str(cont)]['nombre']
-            }
-
-            animal_repetido = db.animales.find_one(filter_animal)
-            if animal_repetido:
-                print(jsonify({'ERROR':'Animal ya existente'}))
-            else:
-                db.eecie.insert_one(new_animal)
-        return "ha ido todo bien"
+            result = db.animales.insert_one(new_animal)
+        return jsonify({'OK':'Se han podido ingresar los animales'})
     except Exception as e:
-        return jsonify({'ERROR': 'No se han podido introducir los animales'})
+        return jsonify({'ERROR': 'No se ha podido crear la lista de animales'}), 400
+
+
+
+
+
+
+
+#--------------- VETERINARIOS ---------------
 
 
 
@@ -615,7 +614,15 @@ def create_animals(user_id):
 
 
 
-#--------------- Veterinarios ---------------
+
+
+
+
+
+
+
+
+
 
 
 
