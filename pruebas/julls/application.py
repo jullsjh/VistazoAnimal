@@ -233,6 +233,46 @@ def delete_comida_from_id(id):
 
 
 
+# -----------------------------------------------NUEVO: 07/03 --------------------------------------------------------------------------------------
+@application.route('/animales/nuevo', methods=['POST'])
+# @check_auth(UserRole.SUPERADMIN)
+def new_animal():
+    try: 
+        nombre = request.json['nombre']
+        new_animal = {
+            'nombre': nombre,
+            'tamanno': request.json['tamaño'],
+            'peso': request.json['peso'],
+            'id_habitat': request.json['id_habitat'],
+            'id_especie': request.json['id_especie']
+        }
+        mongodb.animales.insert_one(new_animal)
+        response = jsonify({'message': 'Animal con nombre: ' + nombre + ' --> Insertado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
