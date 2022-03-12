@@ -1,6 +1,15 @@
 #plantillas de datos para enviar API
 
-#lita de animales con todos sus datos
+#Para modificar una venta se manda la cantidad y el nombre, apellidos del usuario
+{
+	"nombre": "Jairo",
+	"apellido1": "Gutierrez",
+	"apellido2": "Sivila",
+	"cantidad": "5"
+}
+
+
+#insertar una lista de animales con todos sus datos
 [
     {
         "nombre":"lince",
@@ -20,7 +29,7 @@
 
 
 
-#insertar un veterinario
+#insertar un veterinario con su especie correspondiente
 {
 	"nombre": "Cesar",
 	"apellido1": "Diaz",
@@ -28,3 +37,53 @@
 	"especie_nombre": "mammalia",
 	"estado": "disponible"
 }
+
+
+#asignar especie a un veterinario en concreto y que ese veterinario deje de estar disponible, comprueba si ya esta disponible o no
+#json con el nombre y los apellidos y el nombre de la especie, el estado cambia automaticamente a asignado
+{
+	"nombre": "Jairo",
+	"apellido1": "Gutierrez",
+	"apellido2": "Sivila",
+	"especie_nombre": "vulgaris"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+filter = {
+            '_id': ObjectId(str(id))
+        }
+        user = db.usuarios.find_one(filter)
+        data = request.get_json()
+        if 'nombre' not in data:
+            nombre = user['nombre']
+        else:
+            nombre = data['nombre']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

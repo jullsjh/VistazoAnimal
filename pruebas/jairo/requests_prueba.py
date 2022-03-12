@@ -57,4 +57,12 @@ def crear_usuario():
 
 
 
+print("1. Animales")
+print("2. Comida")
+print("3. Especie")
+print("4. Habitats")
+print("5. Usuarios")
+print("6. Ventas")
+print("7. Veterinarios")
+input("Escoja una tabla: \n")
 print(crear_usuario())
