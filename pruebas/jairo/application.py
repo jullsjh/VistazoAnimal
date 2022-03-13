@@ -1,5 +1,6 @@
 #imports
 from dataclasses import dataclass
+from errno import ESTALE
 from sqlite3 import Date
 from urllib import response
 from bson import json_util
@@ -594,48 +595,6 @@ def update_species(user_id, id):
 
 
 
-#--------------- ANIMALES ---------------
-
-#registrar varios animales con todos sus datos
-@application.route('/species/create', methods=['POST'])
-@check_auth(UserRole.EMPLEADO)
-def create_species(user_id):
-    try:
-        json_data = request.get_json()
-        for data in json_data:
-            #recuperar el id de de la especie
-            filter_especie = {
-                'nombre_cientifico' : data['nombre_especie']
-            }
-            projection_especie = {
-                '_id': 1
-            }
-            especie = db.especies.find_one(filter_especie, projection_especie)
-            #recuperar el id del habitat
-            filter_habitat = {
-                'nombre' : data['nombre_habitat']
-            }
-            projection_habitat = {
-                '_id': 1
-            }
-            habitat = db.habitats.find_one(filter_habitat, projection_habitat)
-            if especie is None or habitat is None:
-                return jsonify({'ERROR':'Ha habido un problema con el nombre de habitat/especie'})
-            new_animal = { 
-                'nombre': data['nombre'],
-                'tamanno': data['tamanno'],
-                'peso': data['peso'],
-                'habitat_id': habitat['_id'],
-                'especie_id': especie['_id']
-                }
-            result = db.animales.insert_one(new_animal)
-        return jsonify({'OK':'Se han podido ingresar los animales'}), 201
-    except Exception as e:
-        return jsonify({'ERROR': 'No se ha podido crear la lista de animales'}), 400
-
-
-
-
 
 
 
@@ -682,7 +641,7 @@ def get_veterinary(user_id,id):
 
 
 
-#Eliminar un usuario por id
+#Eliminar un veterinario por id
 @application.route('/veterinary/<id>', methods=['DELETE'])
 @check_auth(UserRole.EMPLEADO)
 def delete_veterinary_byId(user_id,id):
@@ -843,8 +802,371 @@ def assign_specie_veterinary(user_id):
 #Funciones Julls -----------------------------------------------------------------------
 
 
+#--------------- ANIMALES ---------------
+
+#registrar varios animales con todos sus datos
+@application.route('/animals/create', methods=['POST'])
+@check_auth(UserRole.EMPLEADO)
+def create_species(user_id):
+    try:
+        json_data = request.get_json()
+        for data in json_data:
+            #recuperar el id de de la especie
+            filter_especie = {
+                'nombre_cientifico' : data['nombre_especie']
+            }
+            projection_especie = {
+                '_id': 1
+            }
+            especie = db.especies.find_one(filter_especie, projection_especie)
+            #recuperar el id del habitat
+            filter_habitat = {
+                'nombre' : data['nombre_habitat']
+            }
+            projection_habitat = {
+                '_id': 1
+            }
+            habitat = db.habitats.find_one(filter_habitat, projection_habitat)
+            if especie is None or habitat is None:
+                return jsonify({'ERROR':'Ha habido un problema con el nombre de habitat/especie'})
+            new_animal = { 
+                'nombre': data['nombre'],
+                'tamanno': data['tamanno'],
+                'peso': data['peso'],
+                'habitat_id': habitat['_id'],
+                'especie_id': especie['_id']
+                }
+            result = db.animales.insert_one(new_animal)
+        return jsonify({'OK':'Se han podido ingresar los animales'}), 201
+    except Exception as e:
+        return jsonify({'ERROR': 'No se ha podido crear la lista de animales'}), 400
 
 
+#Obtener todos los animales
+@application.route("/animals", methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def get_animals(user_id):
+    try:
+        animales = list(db.animales.find())
+        if animales:
+            return jsonify(animales), 200
+        else:
+            return jsonify({'ERROR': 'No se ha podido recuperar los animales'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+#Creacion de un nuevo animal mediante un json
+@application.route('/animal', methods=['POST'])
+@check_auth(UserRole.SUPERADMIN)
+def new_animal(user_id):
+    try:
+        #Comprobacion de que no existe el animal
+        data = request.get_json()
+        filter_rep = {
+            'nombre': data['nombre']
+        }
+        busqueda = db.animales.find_one(filter_rep)
+        if busqueda:
+            return jsonify({'message': 'Animal ya existente intentelo de nuevo'}), 400
+        else:
+            especie = db.especie.find_one({'nombre_cientifico':data['nombre_especie']})
+            habitat = db.habitats.find_one({'nombre':data['nombre_habitat']})
+            new_animal = {
+                'nombre': data['nombre'],
+                'tamanno': data['tamanno'],
+                'peso': data['peso'],
+                'id_habitat': especie['_id'],
+                'id_especie': habitat['_id']
+            }
+            db.animales.insert_one(new_animal)
+            nombre = data['nombre']
+            return jsonify({'message': 'Animal con nombre: ' + nombre + ' Insertado Correctamente'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+#Eliminar un animal por id
+@application.route('/animals/search/<id>', methods=['DELETE'])
+@check_auth(UserRole.EMPLEADO)
+def delete_animal_byId(user_id,id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }  
+        busqueda = db.animales.delete_one(filter)
+        if busqueda:
+            response = jsonify({'message': 'Animal con id:  ' + id + ' Ha sido eliminado Correctamente'})
+            response.status_code = 200
+            return response
+        else:
+            return jsonify({'ERROR': 'ID introducido no existe'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+#Buscar un animal por su nombre
+@application.route('/animals/search/<string:input_animal>', methods=['GET'])
+@check_auth(UserRole.USUARIO)
+def search_animal(user_id,input_animal):
+    try:
+        filter = {'nombre': input_animal}
+        animales = db.animales.find(filter)
+        if animales:
+            respuesta = json_util.dumps(animales)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se ha podido encontrar el animal introducido'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Modificar un animal ya existente 
+
+
+
+
+#Buscar todos los animales de un habitat por nombre habitat
+@application.route('/animals/habitat/<string:nombre>', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def search_animals_from_habitat(user_id,nombre):
+    try: 
+        # devuelve todos los datos de 1 habitat
+        filter = {'nombre': nombre}
+        habitat = db.habitats.find_one(filter)
+        # me quedo SOLO con el id_habitat de habitat buscado
+        filter2 = {'habitat_id': habitat['_id']}
+        animales = db.animales.find(filter2)
+        if animales:
+            respuesta = json_util.dumps(animales)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se ha podido recuperar los animales del habitat'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR_EXP': str(e)}), 400
+
+
+
+
+
+
+
+
+
+
+#--------------- HABITATS ---------------
+
+#Obtener todos los habitats
+@application.route("/habitats", methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def get_habitats(user_id):
+    try:
+        habitats = list(db.habitats.find())
+        if habitats:
+            return jsonify(habitats), 200
+        else:
+            return jsonify({'ERROR': 'No se ha podido recuperar los habitats'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Obtener un habitat por su nombre
+@application.route('/animals/search/<string:habitat>', methods=['GET'])
+@check_auth(UserRole.USUARIO)
+def search_habitat(user_id,habitat):
+    try:
+        filter = {'nombre': habitat}
+        habitats = db.animales.find(filter)
+        if habitats:
+            respuesta = json_util.dumps(habitats)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se ha podido encontrar el habitat introducido'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Modificar un habitat mediante su id
+@application.route('/habitat/<id>', methods=['PUT'])
+@check_auth(UserRole.SUPERADMIN)
+def update_veterinary(user_id, id):
+    try:
+        filter = {
+            '_id': ObjectId(str(id))
+        }
+        habitat = db.habitats.find_one(filter)
+        data = request.get_json()
+        if 'nombre' not in data:
+            nombre = habitat['nombre']
+        else:
+            nombre = data['nombre']
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if nombre :
+            update = {'$set': {
+                'nombre': nombre
+                }}
+            db.habitats.update_one(filter, update)
+            response = jsonify({'message': 'habitat con ' + id + ' Fue actualizado correctamente'})
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
+
+
+
+
+
+
+#--------------- COMIDAS ---------------
+
+#Obtener informacion sobre todas las comidas
+@application.route("/comidas", methods=['GET'])
+def all_comidas():
+    filter = {}
+    projection = {'_id': 0}
+
+    comidas = list(db.comida.find(filter, projection))
+    for comida in comidas:
+        print(comida)
+    
+    return jsonify(comidas), 200
+
+@application.route('/comidas/buscar/<id>', methods=['GET'])
+def buscar_comida(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        comidas = db.comidas.find(filter)
+        respuesta = json_util.dumps(comidas)
+        return respuesta
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+#Crear una nueva comida
+@application.route('/comidas/nuevo', methods=['POST'])
+def new_comida():
+    try: 
+        nombre = request.json['nombre']
+        cantidad = request.json['cantidad']
+        new_comida = {
+            'nombre': nombre,
+            'cantidad': cantidad
+        }
+        db.comida.insert_one(new_comida)
+        response = jsonify({'message': 'Comida con nombre: ' + nombre + ' --> Insertado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+#Modificar una comida mediante su id
+@application.route('/comidas/actualizar/<id>', methods=['PUT'])
+def update_comida(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }
+        update = {
+            '$set': {
+                'nombre': request.json['nombre'],
+                'cantidad': request.json['cantidad']
+            }
+        }
+        db.comidas.update_one(filter, update)
+        response = jsonify({'message': 'Comida con id: ' + id + ' --> Actualizado Correctamente'})
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+#Borrar una comida mediante su id
+@application.route('/comidas/borrar_id/<id>', methods=['DELETE'])
+def delete_comida_from_id(id):
+    try:
+        filter = {
+            '_id': ObjectId(id)
+        }  
+        db.comidas.delete_one(filter)
+        response = jsonify({'message': 'Comida con id: ' + id + ' --> Eliminado Correctamente'})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+
+# consultar que come una especie
+@application.route('/animales/comida/<string:nombre>', methods=['GET'])
+def search_comida_animal(nombre):
+    try: 
+        # devuelve todos los datos de 1 animal
+        filter = {'nombre_cientifico': nombre}
+        animales = db.especie.find_one(filter)
+        # me quedo SOLO con el comida_id del animal buscado
+        filter2 = {'comida_id': animales['comida_id']}
+        projection = {
+            '_id': 0, 
+            'tamanno': 0,
+            'peso': 0,
+            'id_habitat': 0,
+            'id_especie': 0
+        }
+
+        animales = db.animales.find(filter2, projection)
+        respuesta = json_util.dumps(animales)
+        return respuesta
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
+
+
+
+
+
+
+# busco todos las especies que comen una comida en particular
+@application.route('/animales/misma_comida/<string:nombre>', methods=['GET'])
+def search_animales_misma_comida(nombre):
+    try: 
+        # devuelve todos los datos de 1 animal
+        filter = {'nombre': nombre}
+        animales = db.animales.find_one(filter)
+        # me quedo SOLO con el comida_id del animal buscado
+        filter2 = {'comida_id': animales['comida_id']}
+        projection = {
+            '_id': 0, 
+            'tamanno': 0,
+            'peso': 0,
+            'id_habitat': 0,
+            'id_especie': 0
+        }
+
+        animales = db.animales.find(filter2, projection)
+        respuesta = json_util.dumps(animales)
+        return respuesta
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 

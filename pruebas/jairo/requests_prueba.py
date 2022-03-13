@@ -64,5 +64,7 @@ print("4. Habitats")
 print("5. Usuarios")
 print("6. Ventas")
 print("7. Veterinarios")
-input("Escoja una tabla: \n")
-print(crear_usuario())
+opcion = input("Escoja una tabla: \n")
+
+if opcion == 1:
+    crear_usuario()

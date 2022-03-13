@@ -1,5 +1,4 @@
-from calendar import c
-from time import process_time_ns
+
 from traceback import print_tb
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -59,39 +58,40 @@ db = client.VistazoAnimal
 #     print(data)
 
 
-data = {
-	"nombre": "Jairo",
-	"apellido1": "Gutierrez",
-	"apellido2": "Sivila",
-	"especie_nombre": "vulgaris"
-}
+# data = {
+# 	"nombre": "Jairo",
+# 	"apellido1": "Gutierrez",
+# 	"apellido2": "Sivila",
+# 	"especie_nombre": "vulgaris"
+# }
 
-filter = {
-    'nombre': data['nombre'],
-    'apellido1':data['apellido1'],
-    'apellido2':data['apellido2']
-}
-projection  = {
-'estado':1
-}
-#recuperamos todos los datos del veterinario
-veterinario = db.veterinarios.find_one(filter)
-#recuperamos la especie por el nombre
-filter_especie = {
-'nombre_cientifico': data['especie_nombre']
-}
-projection_especie = {
-    '_id':1
-}
-especie = db.especie.find_one(filter_especie,projection_especie)
-print(veterinario)
-if veterinario['estado'] == "asignado":
-    print('Este veterinario ya esta asignado')
-else:
-    especie_id = especie['_id']
-    update = {'$set': {
-        'estado': 'asignado',
-        'especie_id': especie_id
-    }}
-    db.veterinarios.update_one(filter, update)
-    print('TODO HA IDO BIEN')
+# filter = {
+#     'nombre': data['nombre'],
+#     'apellido1':data['apellido1'],
+#     'apellido2':data['apellido2']
+# }
+# projection  = {
+# 'estado':1
+# }
+# #recuperamos todos los datos del veterinario
+# veterinario = db.veterinarios.find_one(filter)
+# #recuperamos la especie por el nombre
+# filter_especie = {
+# 'nombre_cientifico': data['especie_nombre']
+# }
+# projection_especie = {
+#     '_id':1
+# }
+# especie = db.especie.find_one(filter_especie,projection_especie)
+# print(veterinario)
+# if veterinario['estado'] == "asignado":
+#     print('Este veterinario ya esta asignado')
+# else:
+#     especie_id = especie['_id']
+#     update = {'$set': {
+#         'estado': 'asignado',
+#         'especie_id': especie_id
+#     }}
+#     db.veterinarios.update_one(filter, update)
+#     print('HA IDO BIEN')
+
