@@ -8,6 +8,16 @@
 	"cantidad": "5"
 }
 
+	
+#insertar solo un animal se envian los datos del animal y el nombre de su habitat y especie
+{
+        "nombre":"cuervo",
+        "tamanno": 400,
+        "peso": 75,
+        "nombre_especie": "corvus",
+       	"nombre_habitat": "Aviario"
+}
+
 
 #insertar una lista de animales con todos sus datos
 [
@@ -52,23 +62,6 @@
 
 
 
-
-
-
-
-
-
-
-
-filter = {
-            '_id': ObjectId(str(id))
-        }
-        user = db.usuarios.find_one(filter)
-        data = request.get_json()
-        if 'nombre' not in data:
-            nombre = user['nombre']
-        else:
-            nombre = data['nombre']
 
 
 

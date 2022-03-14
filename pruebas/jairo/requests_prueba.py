@@ -1,15 +1,14 @@
-import email
+from time import process_time_ns
 import requests, json, os
 
 BASE_URL = 'http://127.0.0.1:5000/'
 path_base = os.path.dirname(os.path.abspath(__file__))
-
-
-
-
-
+token_user = None
+headers={}
 
 def login_usuario():
+    global token_user
+    global headers
     print("------------Login de usuario------------")
     email_usuario = input("Introduzca un email para loguearse en su cuenta: \n")
     pass_usuario = input("Introduzca una contraseña para loguearse en su cuenta \n")
@@ -17,17 +16,17 @@ def login_usuario():
         'email': email_usuario,
         'pass': pass_usuario
     }
-    r = requests.post(f'{BASE_URL}comments', json=login_usuario)
-    if r.status_code == 200:
-        print("Bienvenido")
-        hola = "hola"
-        return hola
-    else:
-        print("No se pudo iniciar sesion")
+    auth = requests.post(f'{BASE_URL}login', json=login_usuario)
+    token_user = auth.json()['token']
+    print(token_user)
+    headers = {
+        'Authorization': 'Bearer ' + token_user
+    }
 
 
 
 
+#--------------- Usuarios ---------------
 
 
 #request para registrar un usuario
@@ -49,22 +48,32 @@ def crear_usuario():
     }
     r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
     if r.status_code == 200:
-        return r.json
+        return json.dumps(r.json(),indent=4)
     else:
-        return {'ERROR': 'Error desconocido'}
+        return json.dumps(r.json(),indent=4)
+
+#request para obtener todos los ususarios
+def obtener_usuarios():
+    print("------------Usuarios------------")
+    r = requests.get(f'{BASE_URL}users', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
 
 
 
 
-
-print("1. Animales")
-print("2. Comida")
-print("3. Especie")
-print("4. Habitats")
-print("5. Usuarios")
-print("6. Ventas")
-print("7. Veterinarios")
+login_usuario()
+print("1. Animales \n")
+print("2. Comida \n")
+print("3. Especie \n")
+print("4. Habitats \n")
+print("5. Usuarios \n")
+print("6. Ventas \n")
+print("7. Veterinarios \n")
 opcion = input("Escoja una tabla: \n")
-
-if opcion == 1:
-    crear_usuario()
+if int(opcion) == 5:
+    print(crear_usuario)
+    print(obtener_usuarios())
+    #crear_usuario()

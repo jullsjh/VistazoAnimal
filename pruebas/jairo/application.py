@@ -1,13 +1,11 @@
 #imports
 from dataclasses import dataclass
-from errno import ESTALE
 from sqlite3 import Date
 from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
 from functools import wraps
 from hashlib import algorithms_available
-from lib2to3.pgen2 import token
 from flask import Flask, request, abort, jsonify, Response
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -76,8 +74,9 @@ def hello_world():
 @application.route("/login", methods=['POST'])
 def login():
     try:
-        email = request.form['email']
-        password = request.form['pass']
+        data= request.get_json()
+        email = data['email']
+        password = data['pass']
         #hashed_password = generate_password_hash(password)
         filter = {
             'email': email,
@@ -95,7 +94,7 @@ def login():
         else:
             return jsonify({'ERROR':'No se ha podido iniciar sesión, correo/contraseña incorrectos'}), 401
     except Exception as e:
-        return jsonify({'ERROR': 'No se ha podido iniciar sesión'}), 400
+        return jsonify({'ERROR': 'No se ha podido iniciar sesión','ERROR_2':str(e)}), 400
 
 
 
@@ -927,7 +926,33 @@ def search_animal(user_id,input_animal):
 
 
 #Modificar un animal ya existente 
-
+@application.route('/habitat/<id>', methods=['PUT'])
+@check_auth(UserRole.SUPERADMIN)
+def update_animal(user_id, id):
+    try:
+        data = request.get_json()
+        filter = {
+            '_id': ObjectId(str(id))
+        }
+        habitat = db.habitats.find_one(filter)
+        data = request.get_json()
+        if 'nombre' not in data:
+            nombre = habitat['nombre']
+        else:
+            nombre = data['nombre']
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if nombre :
+            update = {'$set': {
+                'nombre': nombre
+                }}
+            db.habitats.update_one(filter, update)
+            response = jsonify({'message': 'habitat con ' + id + ' Fue actualizado correctamente'})
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
 
 
 
@@ -968,36 +993,38 @@ def get_habitats(user_id):
     try:
         habitats = list(db.habitats.find())
         if habitats:
-            return jsonify(habitats), 200
+            respuesta = json_util.dumps(habitats)
+            return respuesta, 200
         else:
             return jsonify({'ERROR': 'No se ha podido recuperar los habitats'}), 400
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
 
 
 #Obtener un habitat por su nombre
-@application.route('/animals/search/<string:habitat>', methods=['GET'])
+@application.route('/habitats/<string:habitat>', methods=['GET'])
 @check_auth(UserRole.USUARIO)
 def search_habitat(user_id,habitat):
     try:
         filter = {'nombre': habitat}
-        habitats = db.animales.find(filter)
-        if habitats:
-            respuesta = json_util.dumps(habitats)
+        habitat = db.habitats.find_one(filter)
+        if habitat:
+            respuesta = json_util.dumps(habitat)
             return respuesta
         else:
             return jsonify({'ERROR': 'No se ha podido encontrar el habitat introducido'}), 400
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
 
 
 #Modificar un habitat mediante su id
 @application.route('/habitat/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
-def update_veterinary(user_id, id):
+def update_habitat(user_id, id):
     try:
+        data = request.get_json()
         filter = {
             '_id': ObjectId(str(id))
         }
@@ -1022,83 +1049,148 @@ def update_veterinary(user_id, id):
         return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
 
 
+#Creacion de un nuevo habitat enviando un json
+@application.route('/habitat', methods=['POST'])
+@check_auth(UserRole.SUPERADMIN)
+def create_habitat(user_id):
+    try:
+        data = request.get_json()
+        filter = {
+            'nombre': data['nombre']
+        }
+        habitat = db.habitats.find_one(filter)
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if habitat :
+            return  jsonify({'ERROR': 'No se pudo crear el nuevo habitat ya existe uno con ese nombre'})
+        else:
+            nuevo_habitat =  {
+                'nombre': data['nombre']
+                }
+            db.habitats.insert_one(nuevo_habitat)
+            response = jsonify({'message': 'habitat con ' + id + ' Fue creado correctamente'})
+            response.status_code = 201
+            return response
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR_2': str(e)}), 400
+
+
+
+#Eliminar un habitat mediante su id
+@application.route('/habitat/<id>', methods=['DELETE'])
+@check_auth(UserRole.SUPERADMIN)
+def delete_habitat_by_Id(user_id, id):
+    try:
+        filter = {
+            '_id': ObjectId(str(id))
+        }
+        habitat = db.habitats.delete_one(filter)
+        #['$oid']) if '$oid' in id else ObjectId(id) 
+        if habitat :
+            response = jsonify({'message': 'habitat con ' + id + ' Fue eliminado correctamente'})
+            response.status_code = 201
+            return response
+        else:
+            return  jsonify({'ERROR': 'No se pudo eliminar el habitat'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR2': str(e)}), 400
+
 
 
 
 
 #--------------- COMIDAS ---------------
 
+
+
+
+
 #Obtener informacion sobre todas las comidas
-@application.route("/comidas", methods=['GET'])
-def all_comidas():
-    filter = {}
-    projection = {'_id': 0}
+@application.route("/food", methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def get_foods(user_id):
+    try:
+        comidas = list(db.comida.find())
+        if comidas:
+            return json_util.dumps(comidas), 200
+        else:
+            return jsonify({'ERROR': 'No se han podido obtener datos de la comida'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR2': str(e)}), 400
 
-    comidas = list(db.comida.find(filter, projection))
-    for comida in comidas:
-        print(comida)
-    
-    return jsonify(comidas), 200
 
-@application.route('/comidas/buscar/<id>', methods=['GET'])
-def buscar_comida(id):
+
+#buscar un comida por su id
+@application.route('/food/search/<id>', methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def search_food(user_id,id):
     try:
         filter = {
             '_id': ObjectId(id)
         }
-        comidas = db.comidas.find(filter)
-        respuesta = json_util.dumps(comidas)
-        return respuesta
-
+        comidas = db.comida.find(filter)
+        if comidas:
+            respuesta = json_util.dumps(comidas)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se han podido obtener datos de la comida'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 #Crear una nueva comida
-@application.route('/comidas/nuevo', methods=['POST'])
-def new_comida():
-    try: 
+@application.route('/food', methods=['POST'])
+@check_auth(UserRole.EMPLEADO)
+def new_food(user_id):
+    try:
         nombre = request.json['nombre']
         cantidad = request.json['cantidad']
-        new_comida = {
-            'nombre': nombre,
-            'cantidad': cantidad
-        }
-        db.comida.insert_one(new_comida)
-        response = jsonify({'message': 'Comida con nombre: ' + nombre + ' --> Insertado Correctamente'})
-        response.status_code = 200
-        return response
-
+        busqueda = db.comida.find_one({'nombre':nombre})
+        if busqueda:
+            return jsonify({'ERROR': 'No se pudo crear una nueva comida, comida ya existente'}), 400
+        else:
+            new_comida = {
+                'nombre': nombre,
+                'cantidad': cantidad
+            }
+            insert = db.comida.insert_one(new_comida)
+            if insert.inserted_id:
+                response = jsonify({'message': 'Comida con nombre: ' + nombre + ' --> Insertado Correctamente'})
+                response.status_code = 200
+                return response
+            else:
+                return jsonify({'ERROR': 'No se pudo crear una nueva comida'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 #Modificar una comida mediante su id
-@application.route('/comidas/actualizar/<id>', methods=['PUT'])
-def update_comida(id):
+@application.route('/food/<id>', methods=['PUT'])
+@check_auth(UserRole.EMPLEADO)
+def update_food(user_id,id):
     try:
+        data = request.get_json()
         filter = {
             '_id': ObjectId(id)
         }
         update = {
             '$set': {
-                'nombre': request.json['nombre'],
-                'cantidad': request.json['cantidad']
+                'nombre': data['nombre'],
+                'cantidad': data['cantidad']
             }
         }
-        db.comidas.update_one(filter, update)
+        db.comida.update_one(filter, update)
         response = jsonify({'message': 'Comida con id: ' + id + ' --> Actualizado Correctamente'})
         response.status_code = 200
         return response
-
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 #Borrar una comida mediante su id
-@application.route('/comidas/borrar_id/<id>', methods=['DELETE'])
-def delete_comida_from_id(id):
+@application.route('/food/<id>', methods=['DELETE'])
+@check_auth(UserRole.EMPLEADO)
+def delete_food_by_id(user_id,id):
     try:
         filter = {
             '_id': ObjectId(id)
@@ -1114,59 +1206,71 @@ def delete_comida_from_id(id):
 
 
 
-
-# consultar que come una especie
-@application.route('/animales/comida/<string:nombre>', methods=['GET'])
-def search_comida_animal(nombre):
+#Consultar la comida de una especie 
+@application.route('/species/food/<string:nombre_cientifico>', methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def search_food_byspecie(user_id,nombre_cientifico):
     try: 
-        # devuelve todos los datos de 1 animal
-        filter = {'nombre_cientifico': nombre}
-        animales = db.especie.find_one(filter)
-        # me quedo SOLO con el comida_id del animal buscado
-        filter2 = {'comida_id': animales['comida_id']}
-        projection = {
-            '_id': 0, 
-            'tamanno': 0,
-            'peso': 0,
-            'id_habitat': 0,
-            'id_especie': 0
-        }
-
-        animales = db.animales.find(filter2, projection)
-        respuesta = json_util.dumps(animales)
-        return respuesta
-
+        especie = db.especie.find_one({'nombre_cientifico':nombre_cientifico})
+        comida_filter = {'_id': especie['comida_id']}
+        comida = db.comida.find_one(comida_filter)
+        if comida:
+            respuesta = json_util.dumps(comida)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se pudo obtener la comida de esa especie'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
 
-
-
-# busco todos las especies que comen una comida en particular
-@application.route('/animales/misma_comida/<string:nombre>', methods=['GET'])
-def search_animales_misma_comida(nombre):
-    try: 
-        # devuelve todos los datos de 1 animal
-        filter = {'nombre': nombre}
-        animales = db.animales.find_one(filter)
-        # me quedo SOLO con el comida_id del animal buscado
-        filter2 = {'comida_id': animales['comida_id']}
-        projection = {
-            '_id': 0, 
-            'tamanno': 0,
-            'peso': 0,
-            'id_habitat': 0,
-            'id_especie': 0
-        }
-
-        animales = db.animales.find(filter2, projection)
-        respuesta = json_util.dumps(animales)
-        return respuesta
+#Busco todos las especies que comen una comida en particular
+@application.route('/food/species/<string:nombre>', methods=['GET'])
+@check_auth(UserRole.EMPLEADO)
+def search_species_by_food(user_id,nombre):
+    try:
+        comida = db.comida.find_one({'nombre':nombre})
+        especies = db.especie.find({'comida_id':comida['_id']})
+        if especies:
+            respuesta = json_util.dumps(especies)
+            return respuesta, 200
+        else:
+            return jsonify({'ERROR': 'No se han podido recuperar las especies'}), 400
 
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
+
+
+
+#Dar de comer a un animal y que se reduzca la cantidad de comida del animal
+@application.route('/food/specie', methods=['PUT'])
+@check_auth(UserRole.EMPLEADO)
+def givefood_animal(user_id):
+    try:
+        data = request.get_json()
+        animal = db.animales.find_one({'nombre':data['nombre_animal']})
+        especie = db.especie.find_one({'_id':animal['especie_id']})
+        comida = db.comida.find_one({'_id':especie['comida_id']})
+        filter = {
+            '_id': comida['_id']
+        }
+        cantidad_int = int(comida['cantidad'])
+        cantidad_int = cantidad_int - 10
+        update = {
+            '$set': {
+                'cantidad': str(cantidad_int)
+            }
+        }
+        comida = db.comida.update_one(filter,update)
+        if comida:
+            return jsonify({'OK': 'Se ha dado de comer correctamente a los animales'}), 400, 200
+        else:
+            return jsonify({'ERROR': 'No se han podido recuperar las especies'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
+
+
 
 
 
