@@ -233,7 +233,7 @@ def update_user(user_id, id):
         if 'password' not in data:
             password = user['pass']
         else:
-            password = data['pass']
+            password = data['password']
         if 'type' not in data:
             type_user = user['type']
         else:
@@ -257,7 +257,7 @@ def update_user(user_id, id):
         else:
             return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
+        return jsonify({'ERROR': 'Error desconocido', 'ERROR_2': str(e)}), 400
 
 
 
