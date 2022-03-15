@@ -44,15 +44,16 @@ def crear_usuario():
         'apellido2': apellido2,
         'email': email,
         'telefono': telefono,
-        'password': password
+        'password': password,
+        'type':100
     }
-    r = requests.post(f'{BASE_URL}users/',json=nuevo_usuario)
+    r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
     if r.status_code == 200:
         return json.dumps(r.json(),indent=4)
     else:
         return json.dumps(r.json(),indent=4)
 
-#request para obtener todos los ususarios
+#request para obtener todos los usuarios
 def obtener_usuarios():
     print("------------Usuarios------------")
     r = requests.get(f'{BASE_URL}users', headers=headers)
@@ -63,7 +64,18 @@ def obtener_usuarios():
 
 
 
-print(crear_usuario())
+#request para obtener un usuario mediante su id
+def obtener_usuario_id():
+    print("------------Usuario------------")
+    user_id = input("Introduce el id del usuario a buscar: \n")
+    r = requests.get(f'{BASE_URL}users/{user_id}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+#print(crear_usuario())
 login_usuario()
 print("1. Animales \n")
 print("2. Comida \n")
@@ -73,6 +85,7 @@ print("5. Usuarios \n")
 print("6. Ventas \n")
 print("7. Veterinarios \n")
 opcion = input("Escoja una tabla: \n")
+
 if int(opcion) == 5:
     print(obtener_usuarios())
-    #crear_usuario()
+    

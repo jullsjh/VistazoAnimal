@@ -118,7 +118,7 @@ def create_user():
         if user:
             return jsonify({'ERROR': 'Ese correo ya este registrado'})
         #['$oid']) if '$oid' in id else ObjectId(id) 
-        if nombre and apellido1 and apellido2 and email and telefono and password and id:
+        if nombre and apellido1 and apellido2 and email and telefono and password and type_user:
             hashed_password = generate_password_hash(password)
             new_user = {
                 'nombre': nombre,
@@ -131,7 +131,6 @@ def create_user():
                 }
             db.usuarios.insert_one(new_user)
             response = jsonify({
-                '_id': str(id),
                 'nombre': nombre,
                 'apellido1': apellido1,
                 'apellido2': apellido2,
@@ -144,7 +143,7 @@ def create_user():
         else:
             return  jsonify({'ERROR': 'No se pudo crear el usuario falta algun dato por introducir'})
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
 
 
 
