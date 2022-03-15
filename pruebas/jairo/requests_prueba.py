@@ -12,9 +12,13 @@ def login_usuario():
     print("------------Login de usuario------------")
     email_usuario = input("Introduzca un email para loguearse en su cuenta: \n")
     pass_usuario = input("Introduzca una contraseña para loguearse en su cuenta \n")
+    # login_usuario = {
+    #     'email': email_usuario,
+    #     'pass': pass_usuario
+    # }
     login_usuario = {
-        'email': email_usuario,
-        'pass': pass_usuario
+        'email': "j@gmail.com",
+        'pass': "jairo1234"
     }
     auth = requests.post(f'{BASE_URL}login', json=login_usuario)
     token_user = auth.json()['token']
@@ -63,10 +67,9 @@ def obtener_usuarios():
         return json.dumps(r.json(),indent=4)
 
 
-
 #request para obtener un usuario mediante su id
 def obtener_usuario_id():
-    print("------------Usuario------------")
+    print("------------ Usuario ------------")
     user_id = input("Introduce el id del usuario a buscar: \n")
     r = requests.get(f'{BASE_URL}users/{user_id}', headers=headers)
     if r.status_code == 200:
@@ -74,6 +77,65 @@ def obtener_usuario_id():
     else:
         return json.dumps(r.json(),indent=4)
 
+
+#request para borrar un usuario mediante su id
+def borrar_usuario_id():
+    print("------------ Borrar Usuario ------------")
+    user_id = input("Introduce el id del usuario para borrar: \n")
+    r = requests.delete(f'{BASE_URL}users/{user_id}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+#request para modificar un usuario mediante su id
+def modificar_usuario_id():
+    print("------------ Modificar Usuario ------------")
+    print("Espacio en blanco para NO modificar")
+    user_id = input("Introduce el id del usuario para modificar: \n")
+    nombre = input("Introduzca un nombre: \n")
+    apellido1 = input("Introduzca su primer apellido: \n")
+    apellido2 = input("Introduzca su segundo apellido: \n")
+    email = input("Introduzca su email: \n")
+    telefono = input("Introduzca su telefono: \n")
+    password = input("Introduzca una contraseña: \n")
+    usuario_mod = {
+        'nombre': nombre,
+        'apellido1': apellido1,
+        'apellido2': apellido2,
+        'email': email,
+        'telefono': telefono,
+        'password': password,
+        'type':100
+    }
+    r = requests.put(f'{BASE_URL}users/{user_id}',json=usuario_mod,headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+
+#--------------- Ventas ---------------
+
+def crear_venta_usuario_log():
+    print("------------ Compra de entradas ------------")
+    cantidad = input("Introduzca la cantidad: \n")
+    nuevo_usuario = {
+        'nombre': nombre,
+        'apellido1': apellido1,
+        'apellido2': apellido2,
+        'email': email,
+        'telefono': telefono,
+        'password': password,
+        'type':100
+    }
+    r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
 
 #print(crear_usuario())
 login_usuario()
@@ -86,6 +148,16 @@ print("6. Ventas \n")
 print("7. Veterinarios \n")
 opcion = input("Escoja una tabla: \n")
 
+
+
+
+
+
 if int(opcion) == 5:
     print(obtener_usuarios())
-    
+    print(obtener_usuario_id())
+    print(borrar_usuario_id())
+    print(modificar_usuario_id())
+
+if int(opcion) == 6:
+    print()
