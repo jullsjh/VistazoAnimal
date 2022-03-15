@@ -59,7 +59,11 @@
 }
 
 
-
+#json para dar de comer a un animal en concreto y que se reduzca su comida en 10 
+{
+	"nombre_animal":"animal",
+	"nombre_comida":"comida1"	
+}
 
 
 
