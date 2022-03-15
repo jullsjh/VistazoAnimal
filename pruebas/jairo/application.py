@@ -925,7 +925,7 @@ def search_animal(user_id,input_animal):
 
 
 #Modificar un animal ya existente 
-@application.route('/habitat/<id>', methods=['PUT'])
+@application.route('/habitat/<id>', methods=['PUT'])                 
 @check_auth(UserRole.SUPERADMIN)
 def update_animal(user_id, id):
     try:
@@ -953,7 +953,7 @@ def update_animal(user_id, id):
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
 
-
+                     
 
 #Buscar todos los animales de un habitat por nombre habitat
 @application.route('/animals/habitat/<string:nombre>', methods=['GET'])
@@ -1194,7 +1194,7 @@ def delete_food_by_id(user_id,id):
         filter = {
             '_id': ObjectId(id)
         }  
-        db.comidas.delete_one(filter)
+        db.comida.delete_one(filter)
         response = jsonify({'message': 'Comida con id: ' + id + ' --> Eliminado Correctamente'})
         response.status_code = 200
         return response
