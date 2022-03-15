@@ -289,24 +289,25 @@ def create_sale(user_id):
     try:
         fecha = datetime.utcnow()
         cantidad = request.json['cantidad']
+        usuario = db.usuarios.find_one({'_id':ObjectId(user_id)})
         if fecha and cantidad :
             nueva_venta = {
                 'fecha': fecha,
                 'cantidad': cantidad,
-                'usuario_id': user_id
+                'usuario_id': usuario['_id']
             }
             db.ventas.insert_one(nueva_venta)
             response = jsonify({
                 'fecha': fecha,
                 'cantidad': cantidad,
-                'usuario_id': str(user_id),
+                'nombre comprador': usuario['nombre']
             })
             response.status_code = 201
             return response
         else:
             return  jsonify({'ERROR': 'No se pudo modificar el usuario'})
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
 
 
 
@@ -317,8 +318,9 @@ def create_sale(user_id):
 @check_auth(UserRole.USUARIO)
 def get_sales(user_id):
     try:
+        usuario = db.usuarios.find_one({'_id':ObjectId(user_id)})
         filter = {
-            'usuario_id': user_id
+            'usuario_id': usuario['_id']
         }
         projection = {
             'fecha': 1,
@@ -342,7 +344,7 @@ def get_sales(user_id):
 def get_sales_byId(user_id,id):
     try:
         filter = {
-            'usuario_id': id
+            'usuario_id': ObjectId(id)
         }
         projection = {
             'fecha': 1,
@@ -369,10 +371,13 @@ def delete_sales_byId(user_id,id):
         filter = {
             '_id': ObjectId(id)
         }  
-        db.usuarios.delete_one(filter)
-        response = jsonify({'message': 'Venta con id:  ' + id + ' Ha sido eliminada Correctamente'})
-        response.status_code = 200
-        return response
+        eliminado = db.ventas.delete_one(filter)
+        if eliminado:
+            response = jsonify({'message': 'Venta con id:  ' + id + ' Ha sido eliminada Correctamente'})
+            response.status_code = 200
+            return response
+        else:
+            return jsonify({'ERROR': 'id introducido no valido'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
@@ -384,33 +389,23 @@ def delete_sales_byId(user_id,id):
 def update_sales(user_id, id):
     try:
         data= request.get_json()
-        filter_rep = {
+        usuario = db.usuarios.find_one({'_id':ObjectId(user_id)})
+        filter = {
             '_id': ObjectId(str(id))
         }
-        filter_usuario = {
-            'nombre': data['nombre'],
-            'apellido1': data['apellido1'],
-            'apellido2':data['apellido2']
-        }
-        venta = db.ventas.find_one(filter_rep)
-        usuario = db.usuarios.find_one(filter_usuario)
-        if 'cantidad' not in data:
-            cantidad = venta['cantidad']
-        if 'nombre' not in data or 'apellido1' not in data or 'apellido2' not in data:
-            return  jsonify({'ERROR': 'No se ha especificado correctamente el usuario de la venta'})
-        else:
-            usuario_id = usuario['_id'] 
-            filter = {'_id': ObjectId(id)}
+        venta = db.ventas.find_one(filter)
+        if venta:
             update = {'$set': {
-                'cantidad': cantidad,
-                'usuario_id': usuario_id
+                'cantidad': data['cantidad'],
                 }}
             db.ventas.update_one(filter, update)
             response = jsonify({'message': 'Venta con id:  ' + id + ' Ha sido modificada Correctamente'})
             response.status_code = 201
             return response
             #fecha es introducida año/mes/dia ("2014,10,21")
-            #['$oid']) if '$oid' in id else ObjectId(id) 
+            #['$oid']) if '$oid' in id else ObjectId(id)
+        else:
+            return jsonify({'ERROR': 'id no encontrado dentro de la base de datos'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido','ERROR': str(e)}), 400
 
@@ -438,14 +433,18 @@ def update_sales(user_id, id):
 @check_auth(UserRole.EMPLEADO)
 def create_specie(user_id):
     try:
-        nombre_cientifico = request.json['nombre_cientifico']
-        nombre_vulgar = request.json['nombre_vulgar']
-        descripcion = request.json['descripcion']
-        filter_rep = {
-            'nombre_cientifico':nombre_cientifico,
-            'nombre_vulgar':nombre_vulgar
+        data = request.get_json()
+        nombre_cientifico = data['nombre_cientifico']
+        nombre_vulgar = data['nombre_vulgar']
+        descripcion = data['descripcion']
+        nombre_comida = data['comida_nombre']
+        comida = db.comida.find_one({'nombre':nombre_comida})
+        if comida is None:
+            return  jsonify({'ERROR': 'No existe esa comida'})
+        filter_esp = {
+            'nombre_cientifico':nombre_cientifico
         }
-        especie = db.especie.find_one(filter_rep)
+        especie = db.especie.find_one(filter_esp)
         if especie:
             return  jsonify({'ERROR': 'Esa especie ya existe en la base de datos'})
         else:
@@ -453,13 +452,16 @@ def create_specie(user_id):
                 nueva_especie = {
                     'nombre_cientifico': nombre_cientifico,
                     'nombre_vulgar': nombre_vulgar,
-                    'descripcion': descripcion
+                    'descripcion': descripcion,
+                    'comida_id': comida['_id']
                 }
                 db.especie.insert_one(nueva_especie)
                 response = jsonify({
+                    'OK': 'Comida creada correctamente',
                     'nombre_cientifico': nombre_cientifico,
                     'nombre_vulgar': nombre_vulgar,
-                    'descripcion': descripcion
+                    'descripcion': descripcion,
+                    'comida': nombre_comida
                 })
                 response.status_code = 201
                 return response
@@ -514,15 +516,16 @@ def get_species_byId(user_id,id):
 @check_auth(UserRole.EMPLEADO)
 def get_animals_by_specie(user_id,nombre):
     try:
-        filter = {'nombre_vulgar': nombre}
-        especie_inf = db.especie.find_one(filter)
+        filter = {'nombre_cientifico': nombre}
+        especie = db.especie.find_one(filter)
         #return json_util.dumps(especie_inf)
-        if especie_inf :
-            especie_id = especie_inf['_id']
-            filter2 = {'especie_id': str(especie_id)} 
+        if especie :
+            filter2 = {'especie_id': especie['_id']} 
             animales = db.animales.find(filter2)
             response = json_util.dumps(animales)
             return Response(response, mimetype="application/json"), 200
+        else:
+            return jsonify({'ERROR': 'Especie no existente en la base de datos'}), 400
     except Exception as e:
         return jsonify({'ERROR': str(e)}), 400
 
@@ -537,10 +540,13 @@ def delete_species_byId(user_id,id):
         filter = {
             '_id': ObjectId(id)
         }  
-        db.especie.delete_one(filter)
-        response = jsonify({'message': 'Especie con id:  ' + id + ' Ha sido eliminada Correctamente'})
-        response.status_code = 200
-        return response
+        eliminado = db.especie.delete_one(filter)
+        if eliminado:
+            response = jsonify({'message': 'Especie con id:  ' + id + ' Ha sido eliminada Correctamente'})
+            response.status_code = 200
+            return response
+        else:
+            return jsonify({'ERROR': 'No se encontro ese id en la base de datos'}), 400
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
@@ -598,7 +604,81 @@ def update_species(user_id, id):
 
 #--------------- VETERINARIOS ---------------
 
+#crear veterinario asignando su especie correspondiente
+@application.route('/veterinary', methods=['POST'])
+@check_auth(UserRole.EMPLEADO)
+def create_veterinary(user_id):
+    try:
+        data = request.get_json()
+        nombre = data['nombre']
+        apellido1 = data['apellido1']
+        apellido2 = data['apellido2']
+        especie_nombre = data['especie_nombre']
+        estado = data['estado']
+        if estado == 'libre':
+            filter_vet = {
+                'nombre': nombre,
+                'apellido1': apellido1,
+                'apellido2': apellido2,
+            }
+            repetido = db.veterinarios.find_one(filter_vet)
+            if repetido:
+                return jsonify({'ERROR':'Registro repetido'}), 400
+            else:
+                nuevo_veterinario = {
+                    'nombre': nombre,
+                    'apellido1': apellido1,
+                    'apellido2': apellido2,
+                    'especie_id': ObjectId(user_id),
+                    'estado': estado
+                }
+                result = db.veterinarios.insert_one(nuevo_veterinario)
+                if result.inserted_id:
+                    return jsonify({'OK':'Se ha insertado el veterinario correctamente'})
+        else:
+            if estado == 'asignado':
+                filter = {
+                    'nombre_cientifico': especie_nombre
+                }
+                especie = db.especie.find_one(filter)
+                nuevo_veterinario = {
+                    'nombre': nombre,
+                    'apellido1': apellido1,
+                    'apellido2': apellido2,
+                    'especie_id': especie['_id']
+                }
+                filter_vet = {
+                    'nombre': nombre,
+                    'apellido1': apellido1,
+                    'apellido2': apellido2,
+                }
+                repetido = db.veterinarios.find_one(filter_vet)
+                if repetido:
+                    return jsonify({'ERROR':'Registro repetido'}), 400
+                else:
+                    result = db.veterinarios.insert_one(nuevo_veterinario)
+                    if result.inserted_id:
+                        return jsonify({'OK':'Se ha insertado el veterinario correctamente'}), 201
+            else:
+                return jsonify({'ERROR':'El estado tiene que ser libre o asignado'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
+
+
+#Obtener todos los veterinarios
+@application.route('/veterinary', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def get_veterinary(user_id):
+    try:
+        veterinario = db.veterinarios.find()      
+        if veterinario:
+            response = json_util.dumps(veterinario)
+            return Response(response, mimetype="application/json"), 200
+        else:
+            return  jsonify({'ERROR': 'No se pudo obtener el veterinario buscada'})
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
 
 #Obtener veterinario por id 
@@ -617,25 +697,6 @@ def get_veterinary_byId(user_id,id):
             return  jsonify({'ERROR': 'No se pudo obtener el veterinario buscado'})
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
-
-
-#Obtener todos los veterinarios
-@application.route('/veterinary', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
-def get_veterinary(user_id,id):
-    try:
-        veterinario = db.veterinarios.find(filter)      
-        if veterinario:
-            response = json_util.dumps(veterinario)
-            return Response(response, mimetype="application/json"), 200
-        else:
-            return  jsonify({'ERROR': 'No se pudo obtener el veterinario buscada'})
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
 
 
 
@@ -660,14 +721,14 @@ def delete_veterinary_byId(user_id,id):
 
 
 #Modificar un veterinario mediante su id
-@application.route('/veterinay/<id>', methods=['PUT'])
+@application.route('/veterinary/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
 def update_veterinary(user_id, id):
     try:
         filter = {
             '_id': ObjectId(str(id))
         }
-        veterinary = db.usuarios.find_one(filter)
+        veterinary = db.veterinarios.find_one(filter)
         data = request.get_json()
         if 'nombre' not in data:
             nombre = veterinary['nombre']
@@ -683,17 +744,17 @@ def update_veterinary(user_id, id):
             apellido2 = data['apellido2']
         #cuando se introduce la especie se introduce el nombre y no la id
         if 'especie_nombre' not in data:
-            especie = veterinary['especie']
+            especie_id = veterinary['especie_id']
         else:
-            especie = data['especie']
+            especie = db.especie.find_one({'nombre_cientifico':data['especie_nombre']})
+            especie_id = especie['_id']
         if 'estado' not in data:
             estado = veterinary['estado']
         else:
             estado = data['estado']
         #['$oid']) if '$oid' in id else ObjectId(id) 
-        if nombre and apellido1 and apellido2 and especie and estado:
+        if nombre and apellido1 and apellido2 and especie_id and estado:
             #obtenemos el id de la especie
-            especie_id = especie['_id']
             update = {'$set': {
                 'nombre': nombre,
                 'apellido1': apellido1,
@@ -713,49 +774,7 @@ def update_veterinary(user_id, id):
 
 
 
-#crear veterinario asignando su especie correspondiente
-@application.route('/veterinary', methods=['POST'])
-@check_auth(UserRole.EMPLEADO)
-def create_veterinary(user_id):
-    try:
-        data = request.get_json()
-        filter = {
-            'nombre': data['especie_nombre']
-        }
-        projection  = {
-            '_id':1
-        }
-        especie = db.especies.find_one(filter,projection)
-        nombre = data['nombre']
-        apellido1 = data['apellido1']
-        apellido2 = data['apellido2']
-        especie_id = especie['_id']
-        estado = data['estado']
-        if nombre and apellido1 and apellido2 and especie_id and estado:
-            nuevo_veterinario = {
-                'nombre': nombre,
-                'apellido1': apellido1,
-                'apellido2': apellido2,
-                'especie_id': especie_id
-            }
-            filter_vet = {
-                'nombre': nombre,
-                'apellido1': apellido1,
-                'apellido2': apellido2,
-            }
-            repetido = db.veterinarios.find_one(filter_vet)
-            if repetido:
-                return jsonify({'ERROR':'Registro repetido'}), 400
-            else:
-                result = db.veterinarios.insert_one(nuevo_veterinario)
-            if result.inserted_id:
-                return jsonify({'OK':'Se ha insertado el veterinario correctamente'})
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
-
-#asignar especie a un veterinario en concreto y que ese veterinario deje de estar disponible, 
+#asignar especie a un veterinario en concreto y que ese veterinario deje de estar disponible 
 @application.route('/veterinary/assign', methods=['PUT'])
 @check_auth(UserRole.EMPLEADO)
 def assign_specie_veterinary(user_id):
@@ -925,7 +944,7 @@ def search_animal(user_id,input_animal):
 
 
 #Modificar un animal ya existente 
-@application.route('/habitat/<id>', methods=['PUT'])
+@application.route('/animals/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
 def update_animal(user_id, id):
     try:
@@ -933,25 +952,24 @@ def update_animal(user_id, id):
         filter = {
             '_id': ObjectId(str(id))
         }
-        habitat = db.habitats.find_one(filter)
-        data = request.get_json()
-        if 'nombre' not in data:
-            nombre = habitat['nombre']
-        else:
-            nombre = data['nombre']
-        #['$oid']) if '$oid' in id else ObjectId(id) 
-        if nombre :
-            update = {'$set': {
-                'nombre': nombre
-                }}
-            db.habitats.update_one(filter, update)
-            response = jsonify({'message': 'habitat con ' + id + ' Fue actualizado correctamente'})
-            response.status_code = 201
-            return response
-        else:
-            return  jsonify({'ERROR': 'No se pudo modificar el usuario, faltan datos para crear el usuario'})
+        # busca por nombre
+        especie = db.especie.find_one({'nombre_cientifico':data['nombre_especie']})
+        habitat = db.habitats.find_one({'nombre':data['nombre_habitat']})
+        update = {
+            '$set': {
+                'nombre': data['nombre'],
+                'tamanno': data['tamanno'],
+                'peso': data['peso'],
+                'especie_id': especie['_id'],
+                'habitat_id': habitat['_id']
+            }
+        }
+        db.animales.update_one(filter, update)
+        response = jsonify({'message': 'Comida con id: ' + id + ' --> Actualizado Correctamente'})
+        response.status_code = 200
+        return response
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido', 'ERROR': str(e)}), 400
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
@@ -1066,7 +1084,7 @@ def create_habitat(user_id):
                 'nombre': data['nombre']
                 }
             db.habitats.insert_one(nuevo_habitat)
-            response = jsonify({'message': 'habitat con ' + id + ' Fue creado correctamente'})
+            response = jsonify({'message': 'habitat' + data['nombre'] + ' Fue creado correctamente'})
             response.status_code = 201
             return response
     except Exception as e:
@@ -1258,16 +1276,18 @@ def givefood_animal(user_id):
         cantidad_int = cantidad_int - 10
         update = {
             '$set': {
-                'cantidad': str(cantidad_int)
+                'cantidad': cantidad_int
             }
         }
-        comida = db.comida.update_one(filter,update)
-        if comida:
-            return jsonify({'OK': 'Se ha dado de comer correctamente a los animales'}), 400, 200
+        resultado = db.comida.update_one(filter,update)
+        if resultado.modified_count > 0:
+            return jsonify({'OK': 'OK'}), 200
         else:
-            return jsonify({'ERROR': 'No se han podido recuperar las especies'}), 400
+            return jsonify({'ERROR': 'Error desconocido'}), 404
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
+
+
 
 
 
