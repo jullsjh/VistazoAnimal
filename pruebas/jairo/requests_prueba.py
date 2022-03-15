@@ -317,7 +317,24 @@ def modificar_veterinario_id():
 #asignar una especie a un veterinario libre
 def asignar_especie_veterinario():
     print("------------ Asignar especie a veterinario ------------")
-    
+    nombre = input("Ingrese el nombre del veterinario \n")
+    apellido1 = input("Ingrese el primer apellido del veterinario \n")
+    apellido2 = input("Ingrese el segundo apellido del veterinario \n")
+    especie_nombre = input("Ingrese la especie para asignarla al veterinario")
+    vet_assign = {
+        'nombre': nombre,
+        'apellido1': apellido1,
+        'apellido2': apellido2,
+        'especie_nombre': especie_nombre
+    }
+    r = requests.put(f'{BASE_URL}veterinary/assign',json=vet_assign, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+
 
 #print(crear_usuario())
 login_usuario()
@@ -360,3 +377,4 @@ if int(opcion) == 7:
     print(obtener_veterinario_id())
     print(eliminar_veterinario_id())
     print(modificar_veterinario_id())
+    print(asignar_especie_veterinario())

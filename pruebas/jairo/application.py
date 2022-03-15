@@ -689,7 +689,7 @@ def get_veterinary_byId(user_id,id):
         filter = {
             '_id': ObjectId(id)
         }
-        veterinario = db.veterinarios.find(filter)      
+        veterinario = db.veterinarios.find_one(filter)      
         if veterinario:
             response = json_util.dumps(veterinario)
             return Response(response, mimetype="application/json"), 200
@@ -726,7 +726,7 @@ def delete_veterinary_byId(user_id,id):
 def update_veterinary(user_id, id):
     try:
         filter = {
-            '_id': ObjectId(str(id))
+            '_id': ObjectId(id)
         }
         veterinary = db.veterinarios.find_one(filter)
         data = request.get_json()

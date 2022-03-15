@@ -1,5 +1,3 @@
-
-from traceback import print_tb
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 #conexion con la base de datos
@@ -95,3 +93,9 @@ db = client.VistazoAnimal
 #     db.veterinarios.update_one(filter, update)
 #     print('HA IDO BIEN')
 
+id = "6230da7f302f789e1f7569ae"
+filter = {
+    '_id': ObjectId(id)
+}
+veterinary = db.veterinarios.find_one(filter)
+print(veterinary)
