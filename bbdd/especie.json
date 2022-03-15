@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "621bdbbd1693f9b5a79aac90"
+  },
+  "nombre_vulgar": "vulgar",
+  "descripcion": "descripcion de ejemplodos",
+  "nombre_cientifico": "vulgaris",
+  "comida_id": {
+    "$oid": "622cf5d78f22865a3a77f48d"
+  }
+},{
+  "_id": {
+    "$oid": "622e2c4530abd6249441af5a"
+  },
+  "nombre_vulgar": "corvido",
+  "descripcion": "especie de los corvido",
+  "nombre_cientifico": "corvus",
+  "comida_id": {
+    "$oid": "622cf77d8f22865a3a77f491"
+  }
+}]

@@ -46,7 +46,7 @@ def crear_usuario():
         'telefono': telefono,
         'password': password
     }
-    r = requests.post(f'{BASE_URL}users',json=nuevo_usuario)
+    r = requests.post(f'{BASE_URL}users/',json=nuevo_usuario)
     if r.status_code == 200:
         return json.dumps(r.json(),indent=4)
     else:
@@ -63,7 +63,7 @@ def obtener_usuarios():
 
 
 
-
+print(crear_usuario())
 login_usuario()
 print("1. Animales \n")
 print("2. Comida \n")
@@ -74,6 +74,5 @@ print("6. Ventas \n")
 print("7. Veterinarios \n")
 opcion = input("Escoja una tabla: \n")
 if int(opcion) == 5:
-    print(crear_usuario)
     print(obtener_usuarios())
     #crear_usuario()
