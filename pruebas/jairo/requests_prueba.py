@@ -11,22 +11,17 @@ def login_usuario():
     print("------------Login de usuario------------")
     email_usuario = input("Introduzca un email para loguearse en su cuenta: \n")
     pass_usuario = input("Introduzca una contraseña para loguearse en su cuenta \n")
-    # login_usuario = {
-    #     'email': email_usuario,
-    #     'pass': pass_usuario
-    # }
     login_usuario = {
-        'email': "j@gmail.com",
-        'pass': "jairo1234"
+        'email': email_usuario,
+        'pass': pass_usuario
     }
+
     auth = requests.post(f'{BASE_URL}login', json=login_usuario)
     token_user = auth.json()['token']
     print(token_user)
     headers = {
         'Authorization': 'Bearer ' + token_user
     }
-
-
 
 
 #--------------- Usuarios ---------------
@@ -96,6 +91,7 @@ def modificar_usuario_id():
     email = input("Introduzca su email: \n")
     telefono = input("Introduzca su telefono: \n")
     password = input("Introduzca una contraseña: \n")
+    type = input("introduza el tipo de usuario: \n")
     usuario_mod = {
         'nombre': nombre,
         'apellido1': apellido1,
@@ -103,7 +99,7 @@ def modificar_usuario_id():
         'email': email,
         'telefono': telefono,
         'password': password,
-        'type':100
+        'type':type
     }
     r = requests.put(f'{BASE_URL}users/{user_id}',json=usuario_mod,headers=headers)
     if r.status_code == 200:
@@ -334,6 +330,233 @@ def asignar_especie_veterinario():
         return json.dumps(r.json(),indent=4)
 
 
+#--------------- ANIMALES ---------------
+
+def obtener_animales():
+    print("------------ Obtener animales ------------")
+    r = requests.get(f'{BASE_URL}animals', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def registrar_varios_animales():
+    print("------------ Registar varios animales ------------")
+    #numero_animales = input("Ingrese la cantidad de animales que va a ingresar")
+    lista = []
+    respuesta = "Y"
+    while respuesta == "Y":
+        nombre = input("Introduce un nombre para el animal \n")
+        tamanno = input("Introduce el tamaño del animal \n")
+        peso = input("Introduce el peso del animal \n")
+        nombre_especie = input("Introduce el nombre cientifico de la especie \n")
+        nombre_habitat = input("Introduce el nombre del habitat del animal \n")
+        new_animal = {
+            'nombre': nombre,
+            'tamanno': tamanno,
+            'peso': peso,
+            'nombre_especie': nombre_especie,
+            'nombre_habitat': nombre_habitat
+        }
+        lista.append(new_animal)
+        print(lista)
+        respuesta = input("Desea introducir mas animales? Y/N \n")
+    r = requests.post(f'{BASE_URL}animals/create',json=lista, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def crear_animal():
+    print("------------------- Insertar nuevo animal ------------------- \n")
+    nombre = input("Nombre del animal: \n")
+    tamanno = input("Tamaño del animal: \n")
+    peso = input("Peso del animal: \n")
+    nombre_habitat = input("Introduce el nombre del habitat del animal: \n")
+    nombre_especie = input("Introduce el nombre cientifico de la especie del animal: \n")
+    nuevo_animal = {
+        'nombre': nombre,
+        'tamanno': tamanno,
+        'peso': peso,
+        'nombre_habitat': nombre_habitat, #hay que introducir nombre
+        'nombre_especie': nombre_especie #hay que introducir nombre
+    }
+    r = requests.post(f'{BASE_URL}animal', json=nuevo_animal, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def buscar_animal_id():
+    print("------------------- Buscar un animal por su id ------------------- \n")
+    animal_id = input("introduce id del animal: \n")
+    r = requests.get(f'{BASE_URL}animals/search/{animal_id}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def modificar_animal_id():
+    print("-------------------  Modificar animal ------------------- \n")
+    animal_id = input("Introduce el id del animal: \n")
+    print("Introduce los datos a modificar")
+    nombre = input("Nombre del animal: \n")
+    tamanno = input("Tamaño del animal: \n")
+    peso = input("Peso del animal: \n")
+    nombre_habitat = input("Introduce el nombre del habitat del animal: \n")
+    nombre_especie = input("Introduce el nombre cientifico de la especie del animal: \n")
+    nuevo_animal = {
+        'nombre': nombre,
+        'tamanno': tamanno,
+        'peso': peso,
+        'nombre_habitat': nombre_habitat, 
+        'nombre_especie': nombre_especie 
+    }
+    r = requests.put(f'{BASE_URL}animal/{animal_id}', json=nuevo_animal, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def eliminar_animal_id():
+    print("------------------- Eliminar un animal ------------------- \n")
+    id = input("Introduce el ID del animal que quieres eliminar: \n")
+    borrar_animal = {
+        'id': id,
+    }
+    r = requests.delete(f'{BASE_URL}animals/search/{id}', json=borrar_animal, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+#--------------- HABITATS ---------------
+
+def obtener_habitats():
+    print("------------------- Obtener habitats ------------------- \n")
+    r = requests.get(f'{BASE_URL}habitats', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def crear_habitat():
+    print("------------------- Insertar nuevo habitat ------------------- \n")
+    nombre = input("Nombre del habitat: ")
+    nuevo_habitat = {
+        'nombre': nombre,
+    }
+    r = requests.post(f'{BASE_URL}habitat', json=nuevo_habitat, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def modificar_habitat_id():
+    print("------------------- Actualizar habitat ------------------- \n")
+    id = input("Introduce el ID del habitat que quieres actualizar: \n")
+    nombre = input("Nombre del nuevo habitat: \n")
+    actualizar_habitat = {
+        'nombre': nombre,
+    }
+    r = requests.put(f'{BASE_URL}habitat/{id}', json=actualizar_habitat, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def eliminar_habitat_id():
+    print("------------------- Eliminar un habitat ------------------- \n")
+    id = input("Introduce el ID del habitat que quieres eliminar: \n")
+    borrar_habitat = {
+        'id': id,
+    }
+    r = requests.delete(f'{BASE_URL}habitat/{id}', json=borrar_habitat, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+
+#--------------- COMIDAS ---------------
+def obtener_comidas():
+    print("------------------- Obtener comidas ------------------- \n")
+    r = requests.get(f'{BASE_URL}food', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def crear_comida():
+    print("------------------- Insertar nueva comida ------------------- \n")
+    nombre = input("Nombre de la comida: \n")
+    cantidad = input("Introduce la cantidad: \n")
+    nueva_comida = {
+        'nombre': nombre,
+        'cantidad': cantidad
+    }
+    r = requests.post(f'{BASE_URL}food', json=nueva_comida, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def modificar_comida_id():
+    print("------------------- Actualizar comida ------------------- \n")
+    id = input("Introduce el ID de la comida que quieres actualizar: ")
+    nombre = input("Nombre de la nueva comida: \n")
+    cantidad = input("Cantida nueva: \n")
+    actualizar_comida = {
+        'nombre': nombre,
+        'cantidad': cantidad
+    }
+    r = requests.put(f'{BASE_URL}food/{id}', json=actualizar_comida, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def elminar_comida_id():
+    print("------------------- Eliminar una comida ------------------- \n")
+    id = input("Introduce el ID de la comida que quieres eliminar: \n")
+    r = requests.delete(f'{BASE_URL}food/{id}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def dar_comida_animal():
+    print("------------------- Dar de comer a un animal ------------------- \n")
+    # id = input("Introduce el ID de la comida que quieres actualizar: ")
+    nombre = input("Nombre del animal al que vas a alimentar: \n")
+    dar_comida = {
+        'nombre_animal': nombre
+    }
+    r = requests.put(f'{BASE_URL}food/specie', json=dar_comida, headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def obtener_comida_especie():
+    print("------------------- Obtener comida de especie ------------------- \n")
+    nombre_especie=input("Introduce el nombre de la especie \n")
+    r = requests.get(f'{BASE_URL}species/food/{nombre_especie}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
+def obtener_especie_comida():
+    print("------------------- Obtener comida de especie ------------------- \n")
+    nombre_comida=input("Introduce el nombre de la comida \n")
+    r = requests.get(f'{BASE_URL}food/species/{nombre_comida}', headers=headers)
+    if r.status_code == 200:
+        return json.dumps(r.json(),indent=4)
+    else:
+        return json.dumps(r.json(),indent=4)
+
 
 
 #print(crear_usuario())
@@ -348,7 +571,22 @@ print("7. Veterinarios \n")
 opcion = input("Escoja una tabla: \n")
 
 
+if int(opcion) == 1:
+    print(obtener_animales())
+    print(registrar_varios_animales())
+    print(crear_animal())
+    print(buscar_animal_id())
+    print(modificar_animal_id())
+    print(eliminar_animal_id())
 
+if int(opcion) == 2:
+    print(obtener_comidas())
+    print(crear_comida())
+    print(modificar_comida_id())
+    print(elminar_comida_id())
+    print(dar_comida_animal())
+    print(obtener_comida_especie())
+    print(obtener_especie_comida())
 
 if int(opcion) == 3:
     print(crear_nueva_especie())
@@ -357,6 +595,12 @@ if int(opcion) == 3:
     print(obtener_animales_especie())
     print(eliminar_especie_id())
     print(modificar_especie_id())
+
+if int(opcion) == 4:
+    print(obtener_habitats())
+    print(crear_habitat())
+    print(modificar_habitat_id())
+    print(eliminar_habitat_id())
 
 if int(opcion) == 5:
     print(obtener_usuarios())

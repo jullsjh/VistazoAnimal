@@ -80,7 +80,7 @@ def login():
         #hashed_password = generate_password_hash(password)
         filter = {
             'email': email,
-            'pass': password
+            'pass': generate_password_hash(password)
         }
         user = db.usuarios.find_one(filter)
         if user:
@@ -210,31 +210,31 @@ def update_user(user_id, id):
         }
         user = db.usuarios.find_one(filter)
         data = request.get_json()
-        if 'nombre' not in data:
+        if data['nombre'] == "":
             nombre = user['nombre']
         else:
             nombre = data['nombre']
-        if 'apellido1' not in data:
+        if data['apellido1'] == "":
             apellido1 = user['apellido1']
         else:
             apellido1 = data['apellido1']
-        if 'apellido2' not in data:
+        if data['apellido2'] == "":
             apellido2 = user['apellido2']
         else:
             apellido2 = data['apellido2']
-        if 'email' not in data:
+        if data['email'] == "":
             email = user['email']
         else:
             email = data['email']
-        if 'telefono' not in data:
+        if data['telefono'] == "":
             telefono = user['telefono']
         else:
             telefono = data['telefono']
-        if 'password' not in data:
+        if data['password'] == "":
             password = user['pass']
         else:
             password = data['password']
-        if 'type' not in data:
+        if data['type'] == "":
             type_user = user['type']
         else:
             type_user = data['type']
@@ -566,15 +566,15 @@ def update_species(user_id, id):
             '_id':ObjectId(id)
         }
         especie = db.especie.find_one(filter_rep)
-        if 'nombre_cientifico' not in data:
+        if data['nombre_cientifico'] == "":
             nombre_cientifico = especie['nombre_cientifico']
         else:
             nombre_cientifico = data['nombre_cientifico']
-        if 'nombre_vulgar' not in data:
+        if data['nombre_vulgar'] == "":
             nombre_vulgar = especie['nombre_vulgar']
         else:
             nombre_vulgar = data['nombre_vulgar']
-        if 'descripcion' not in data:
+        if data['descripcion'] == "":
             descripcion = especie['descripcion']
         else:
             descripcion = data['descripcion']
@@ -730,25 +730,25 @@ def update_veterinary(user_id, id):
         }
         veterinary = db.veterinarios.find_one(filter)
         data = request.get_json()
-        if 'nombre' not in data:
+        if data['nombre'] == "":
             nombre = veterinary['nombre']
         else:
             nombre = data['nombre']
-        if 'apellido1' not in data:
+        if data['apellido1'] == "":
             apellido1 = veterinary['apellido1']
         else:
             apellido1 = data['apellido1']
-        if 'apellido2' not in data:
+        if data['apellido2'] == "":
             apellido2 = veterinary['apellido2']
         else:
             apellido2 = data['apellido2']
         #cuando se introduce la especie se introduce el nombre y no la id
-        if 'especie_nombre' not in data:
+        if data['especie_nombre'] == "":
             especie_id = veterinary['especie_id']
         else:
             especie = db.especie.find_one({'nombre_cientifico':data['especie_nombre']})
             especie_id = especie['_id']
-        if 'estado' not in data:
+        if data['estado'] == "":
             estado = veterinary['estado']
         else:
             estado = data['estado']
@@ -835,7 +835,7 @@ def create_species(user_id):
             projection_especie = {
                 '_id': 1
             }
-            especie = db.especies.find_one(filter_especie, projection_especie)
+            especie = db.especie.find_one(filter_especie, projection_especie)
             #recuperar el id del habitat
             filter_habitat = {
                 'nombre' : data['nombre_habitat']
@@ -845,7 +845,7 @@ def create_species(user_id):
             }
             habitat = db.habitats.find_one(filter_habitat, projection_habitat)
             if especie is None or habitat is None:
-                return jsonify({'ERROR':'Ha habido un problema con el nombre de habitat/especie'})
+                return jsonify({'ERROR':'Ha habido un problema con el nombre de habitat/especie'}), 404
             new_animal = { 
                 'nombre': data['nombre'],
                 'tamanno': data['tamanno'],
@@ -864,13 +864,14 @@ def create_species(user_id):
 @check_auth(UserRole.EMPLEADO)
 def get_animals(user_id):
     try:
-        animales = list(db.animales.find())
+        animales = db.animales.find()
+        respuesta = json_util.dumps(animales)
         if animales:
-            return jsonify(animales), 200
+            return respuesta, 200
         else:
             return jsonify({'ERROR': 'No se ha podido recuperar los animales'}), 400
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+        return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
 
 #Creacion de un nuevo animal mediante un json
@@ -926,16 +927,16 @@ def delete_animal_byId(user_id,id):
 
 
 
-#Buscar un animal por su nombre
-@application.route('/animals/search/<string:input_animal>', methods=['GET'])
+#Buscar un animal por su id
+@application.route('/animals/search/<id>', methods=['GET'])
 @check_auth(UserRole.USUARIO)
-def search_animal(user_id,input_animal):
+def search_animal(user_id,id):
     try:
-        filter = {'nombre': input_animal}
+        filter = {'_id': ObjectId(id)}
         animales = db.animales.find(filter)
         if animales:
             respuesta = json_util.dumps(animales)
-            return respuesta
+            return respuesta, 200
         else:
             return jsonify({'ERROR': 'No se ha podido encontrar el animal introducido'}), 400
     except Exception as e:
@@ -944,55 +945,53 @@ def search_animal(user_id,input_animal):
 
 
 #Modificar un animal ya existente 
-@application.route('/animals/<id>', methods=['PUT'])
+@application.route('/animal/<id>', methods=['PUT'])
 @check_auth(UserRole.SUPERADMIN)
 def update_animal(user_id, id):
     try:
         data = request.get_json()
-        filter = {
-            '_id': ObjectId(str(id))
+        filter_animal = {
+            '_id': ObjectId(id)
         }
+        animal = db.animales.find_one(filter_animal)
+        if data['nombre'] == "":
+            nombre = animal['nombre']
+        else:
+            nombre = data['nombre']
+        if data['tamanno'] == "":
+            tamanno = animal['tamanno']
+        else:
+            tamanno = data['tamanno']
+        if data['peso'] == "":
+            peso = animal['peso']
+        else:
+            peso = data['peso']
+        if data['nombre_habitat'] == "":
+            habitat_id = animal['habitat_id']
+        else:
+            habitat = db.habitats.find_one({'nombre':data['nombre_habitat']})
+            habitat_id = habitat['_id']
+        if data['nombre_especie'] == "":
+            especie_id = animal['especie_id']
+        else:
+            especie = db.especie.find_one({'nombre_cientifico':data['nombre_especie']})
+            especie_id = especie['_id']
         # busca por nombre
-        especie = db.especie.find_one({'nombre_cientifico':data['nombre_especie']})
-        habitat = db.habitats.find_one({'nombre':data['nombre_habitat']})
         update = {
             '$set': {
-                'nombre': data['nombre'],
-                'tamanno': data['tamanno'],
-                'peso': data['peso'],
-                'especie_id': especie['_id'],
-                'habitat_id': habitat['_id']
+                'nombre': nombre,
+                'tamanno': tamanno,
+                'peso': peso,
+                'especie_id': especie_id,
+                'habitat_id': habitat_id
             }
         }
-        db.animales.update_one(filter, update)
-        response = jsonify({'message': 'Comida con id: ' + id + ' --> Actualizado Correctamente'})
+        db.animales.update_one(filter_animal, update)
+        response = jsonify({'message': 'animal con id: ' + str(id) + ' --> Actualizado Correctamente'})
         response.status_code = 200
         return response
     except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
-
-
-
-#Buscar todos los animales de un habitat por nombre habitat
-@application.route('/animals/habitat/<string:nombre>', methods=['GET'])
-@check_auth(UserRole.SUPERADMIN)
-def search_animals_from_habitat(user_id,nombre):
-    try: 
-        # devuelve todos los datos de 1 habitat
-        filter = {'nombre': nombre}
-        habitat = db.habitats.find_one(filter)
-        # me quedo SOLO con el id_habitat de habitat buscado
-        filter2 = {'habitat_id': habitat['_id']}
-        animales = db.animales.find(filter2)
-        if animales:
-            respuesta = json_util.dumps(animales)
-            return respuesta
-        else:
-            return jsonify({'ERROR': 'No se ha podido recuperar los animales del habitat'}), 400
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido','ERROR_EXP': str(e)}), 400
-
-
+        return jsonify({'ERROR': 'Error desconocido','ERROR_2': str(e)}), 400
 
 
 
@@ -1034,6 +1033,24 @@ def search_habitat(user_id,habitat):
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido','ERROR2': str(e)}), 400
 
+#Buscar todos los animales de un habitat por nombre habitat
+@application.route('/animals/habitat/<string:nombre>', methods=['GET'])
+@check_auth(UserRole.SUPERADMIN)
+def search_animals_from_habitat(user_id,nombre):
+    try: 
+        # devuelve todos los datos de 1 habitat
+        filter = {'nombre': nombre}
+        habitat = db.habitats.find_one(filter)
+        # me quedo SOLO con el id_habitat de habitat buscado
+        filter2 = {'habitat_id': habitat['_id']}
+        animales = db.animales.find(filter2)
+        if animales:
+            respuesta = json_util.dumps(animales)
+            return respuesta
+        else:
+            return jsonify({'ERROR': 'No se ha podido recuperar los animales del habitat'}), 400
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido','ERROR_EXP': str(e)}), 400
 
 
 #Modificar un habitat mediante su id
@@ -1047,7 +1064,7 @@ def update_habitat(user_id, id):
         }
         habitat = db.habitats.find_one(filter)
         data = request.get_json()
-        if 'nombre' not in data:
+        if data['nombre'] == "":
             nombre = habitat['nombre']
         else:
             nombre = data['nombre']
@@ -1084,7 +1101,7 @@ def create_habitat(user_id):
                 'nombre': data['nombre']
                 }
             db.habitats.insert_one(nuevo_habitat)
-            response = jsonify({'message': 'habitat' + data['nombre'] + ' Fue creado correctamente'})
+            response = jsonify({'message': 'habitat ' + data['nombre'] + ' Fue creado correctamente'})
             response.status_code = 201
             return response
     except Exception as e:
@@ -1189,6 +1206,15 @@ def update_food(user_id,id):
         filter = {
             '_id': ObjectId(id)
         }
+        comida = db.comida.find_one(filter)
+        if data['nombre'] == "":
+            nombre = comida['nombre']
+        else:
+            nombre = data['nombre']
+        if data['cantidad'] == "":
+            cantidad = comida['cantidad']
+        else:
+            cantidad = data['cantidad']
         update = {
             '$set': {
                 'nombre': data['nombre'],

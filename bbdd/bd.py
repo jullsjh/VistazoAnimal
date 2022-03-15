@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 #conexion con la base de datos
 client = MongoClient('mongodb://localhost:27017/?readPreference=primary&appname=MongoDB+Compass&ssl=false')
 db = client.VistazoAnimal
@@ -93,9 +94,3 @@ db = client.VistazoAnimal
 #     db.veterinarios.update_one(filter, update)
 #     print('HA IDO BIEN')
 
-id = "6230da7f302f789e1f7569ae"
-filter = {
-    '_id': ObjectId(id)
-}
-veterinary = db.veterinarios.find_one(filter)
-print(veterinary)

@@ -36,10 +36,9 @@ def all_animals():
 def buscar_animal():
     global token_user
     global headers
-    print("------------------- Buscar un animal por su nombre ------------------- \n")
-    nombre = input("Nombre del animal: ")
-    buscar_animal = {'nombre': nombre}
-    r = requests.get(f'{BASE_URL}animals/search', json=buscar_animal, headers=headers)
+    print("------------------- Buscar un animal por su id ------------------- \n")
+    animal_id = input("introduce id del animal: \n")
+    r = requests.get(f'{BASE_URL}animals/search/{animal_id}', headers=headers)
     if (r.status_code == 200):
         return r.json()
     else:
@@ -50,11 +49,11 @@ def new_animal():
     global token_user
     global headers
     print("------------------- Insertar nuevo animal ------------------- \n")
-    nombre = input("Nombre del animal: ")
-    tamanno = input("Tamaño del animal: ")
-    peso = input("Peso del animal: ")
-    nombre_habitat = input("Introduce el nombre del habitat del animal: ")
-    nombre_especie = input("Introduce el nombre cientifico de la especie del animal: ")
+    nombre = input("Nombre del animal: \n")
+    tamanno = input("Tamaño del animal: \n")
+    peso = input("Peso del animal: \n")
+    nombre_habitat = input("Introduce el nombre del habitat del animal: \n")
+    nombre_especie = input("Introduce el nombre cientifico de la especie del animal: \n")
     nuevo_animal = {
         'nombre': nombre,
         'tamanno': tamanno,
@@ -62,7 +61,7 @@ def new_animal():
         'nombre_habitat': nombre_habitat, #hay que introducir nombre
         'nombre_especie': nombre_especie #hay que introducir nombre
     }
-    r = requests.post(f'{BASE_URL}animals', json=nuevo_animal, headers=headers)
+    r = requests.post(f'{BASE_URL}animal', json=nuevo_animal, headers=headers)
     if (r.status_code == 200):
         return r.json()
     else:
@@ -230,10 +229,7 @@ def delete_comida():
     global headers
     print("------------------- Eliminar una comida ------------------- \n")
     id = input("Introduce el ID de la comida que quieres eliminar: ")
-    borrar_comida = {
-        'id': id,
-    }
-    r = requests.delete(f'{BASE_URL}food/{id}', json=borrar_comida, headers=headers)
+    r = requests.delete(f'{BASE_URL}food/{id}', headers=headers)
     if (r.status_code == 200):
         return r.json
     else:
