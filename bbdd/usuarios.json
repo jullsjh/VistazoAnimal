@@ -1,5 +1,12 @@
-[{"nombre":"Doro","apellido1":"Evered","apellido2":"Glide","email":"dglide0@ftc.gov","telefono":"(699) 3263503","pass":"kDbCMSM"},
-{"nombre":"Janel","apellido1":"Houchin","apellido2":"Bandt","email":"jbandt1@unc.edu","telefono":"(937) 5128409","pass":"0koB9grwI"},
-{"nombre":"Manfred","apellido1":"Adnam","apellido2":"Sudworth","email":"msudworth2@sun.com","telefono":"(528) 8534952","pass":"Az8q5IH"},
-{"nombre":"Barney","apellido1":"Merrilees","apellido2":"Clowton","email":"bclowton3@marriott.com","telefono":"(226) 8088670","pass":"p27tPb"},
-{"nombre":"Drusi","apellido1":"Nurdin","apellido2":"Mumbeson","email":"dmumbeson4@shareasale.com","telefono":"(768) 8104242","pass":"gb9Sdr"}]
+[{
+  "_id": {
+    "$oid": "6216848d3c7b5b70d315d5fe"
+  },
+  "nombre": "jairo",
+  "apellido1": "Gutierrez",
+  "apellido2": "Sivila",
+  "email": "j@gmail.com",
+  "telefono": "675134156",
+  "pass": "jairo1234",
+  "type": 1
+}]
