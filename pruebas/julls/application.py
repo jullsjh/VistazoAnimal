@@ -170,22 +170,22 @@ def search_animales_misma_comida(nombre):
 
 
 # -------------------------------- POST --------------------------------
-@application.route('/comidas/nuevo', methods=['POST'])
-def new_comida():
-    try: 
-        nombre = request.json['nombre']
-        cantidad = request.json['cantidad']
-        new_comida = {
-            'nombre': nombre,
-            'cantidad': cantidad
-        }
-        mongodb.comidas.insert_one(new_comida)
-        response = jsonify({'message': 'Comida con nombre: ' + nombre + ' --> Insertado Correctamente'})
-        response.status_code = 200
-        return response
+# @application.route('/comidas/nuevo', methods=['POST'])
+# def new_comida():
+#     try: 
+#         nombre = request.json['nombre']
+#         cantidad = request.json['cantidad']
+#         new_comida = {
+#             'nombre': nombre,
+#             'cantidad': cantidad
+#         }
+#         mongodb.comidas.insert_one(new_comida)
+#         response = jsonify({'message': 'Comida con nombre: ' + nombre + ' --> Insertado Correctamente'})
+#         response.status_code = 200
+#         return response
 
-    except Exception as e:
-        return jsonify({'ERROR': 'Error desconocido'}), 400
+#     except Exception as e:
+#         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
@@ -233,40 +233,169 @@ def delete_comida_from_id(id):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # -----------------------------------------------NUEVO: 07/03 --------------------------------------------------------------------------------------
+# -------------------------------- POST --------------------------------
+
 @application.route('/animales/nuevo', methods=['POST'])
 # @check_auth(UserRole.SUPERADMIN)
 def new_animal():
     try: 
         nombre = request.json['nombre']
-        new_animal = {
-            'nombre': nombre,
-            'tamanno': request.json['tamaño'],
-            'peso': request.json['peso'],
-            'id_habitat': request.json['id_habitat'],
-            'id_especie': request.json['id_especie']
-        }
-        mongodb.animales.insert_one(new_animal)
-        response = jsonify({'message': 'Animal con nombre: ' + nombre + ' --> Insertado Correctamente'})
-        response.status_code = 200
-        return response
+        tamanno = request.json['tamanno']
+        peso = request.json['peso']
+        id_habitat = request.json['id_habitat']
+        id_especie =request.json['id_especie']
+        
+        filter = {'nombre': nombre}
+        animal = mongodb.animales.find_one(filter)
+        if animal:
+            return jsonify({'ERROR': 'El animal ya está registrado'})
+
+        if nombre and tamanno and peso and id_habitat and id_especie and id:
+            new_animal = {
+                'nombre': nombre,
+                'tamanno': tamanno,
+                'peso': peso,
+                'id_habitat': id_habitat,
+                'id_especie': id_especie
+                }
+            mongodb.animales.insert_one(new_animal)
+
+            response = jsonify({
+                '_id': str(id),
+                'nombre': nombre,
+                'tamanno': tamanno,
+                'peso': peso,
+                'id_habitat': id_habitat,
+                'id_especie': id_especie
+                })
+            response.status_code = 201
+            return response
+
+        else:
+            return  jsonify({'ERROR': 'No se pudo crear el animal, falta algun dato por introducir'})
 
     except Exception as e:
         return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
+@application.route('/habitats/nuevo', methods=['POST'])
+# @check_auth(UserRole.SUPERADMIN)
+def new_habitat():
+    try: 
+        nombre = request.json['nombre']
+        id_habitat = request.json['id_habitat']
+        
+        filter = {'nombre': nombre}
+        habitat = mongodb.habitats.find_one(filter)
+        if habitat:
+            return jsonify({'ERROR': 'El habitat ya está registrado'})
+
+        if nombre and id_habitat and id:
+            new_habitat = {
+                'nombre': nombre,
+                'id_habitat': id_habitat,
+                }
+            mongodb.habitats.insert_one(new_habitat)
+
+            response = jsonify({
+                '_id': str(id),
+                'nombre': nombre,
+                'id_habitat': id_habitat,
+                })
+            response.status_code = 201
+            return response
+
+        else:
+            return  jsonify({'ERROR': 'No se pudo crear el habitat, falta algun dato por introducir'})
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
+@application.route('/comidas/nuevo', methods=['POST'])
+# @check_auth(UserRole.SUPERADMIN)
+def new_comida():
+    try: 
+        nombre = request.json['nombre']
+        cantidad = request.json['cantidad']
+        
+        filter = {'nombre': nombre}
+        habitat = mongodb.comidas.find_one(filter)
+        if habitat:
+            return jsonify({'ERROR': 'El habitat ya está registrado'})
+
+        if nombre and cantidad and id:
+            new_habitat = {
+                'nombre': nombre,
+                'cantidad': cantidad,
+                }
+            mongodb.comidas.insert_one(new_habitat)
+
+            response = jsonify({
+                '_id': str(id),
+                'nombre': nombre,
+                'cantidad': cantidad,
+                })
+            response.status_code = 201
+            return response
+
+        else:
+            return  jsonify({'ERROR': 'No se pudo crear la comida, falta algun dato por introducir'})
+
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
-
-
-
-
-
-
-
+# -------------------------------- DELETE --------------------------------
+@application.route('/animales/borrar/<string:nombre>', methods=['DELETE'])
+# @check_auth(UserRole.SUPERADMIN)
+def delete_animal_from_name(nombre):
+    try:
+        nombre = request.json['nombre']
+        filter = {'nombre': nombre}  
+        if nombre:
+            mongodb.animales.delete_one(filter)
+        
+        response = jsonify({'message': 'El animal: ' + nombre + ' --> Eliminado Correctamente'})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        return jsonify({'ERROR': 'Error desconocido'}), 400
 
 
 
