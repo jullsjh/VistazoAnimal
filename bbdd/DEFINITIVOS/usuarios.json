@@ -1,0 +1,12 @@
+[{
+  "_id": {
+    "$oid": "6216848d3c7b5b70d315d5fe"
+  },
+  "nombre": "jairo",
+  "apellido1": "Gutierrez",
+  "apellido2": "Sivila",
+  "email": "j@gmail.com",
+  "telefono": "675134156",
+  "pass": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+  "type": 1
+}]

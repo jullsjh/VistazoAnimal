@@ -1,0 +1,21 @@
+[{
+  "_id": {
+    "$oid": "62312b41d427ac7336389479"
+  },
+  "nombre": "Aviario"
+},{
+  "_id": {
+    "$oid": "62312b4ad427ac733638947a"
+  },
+  "nombre": "pradera"
+},{
+  "_id": {
+    "$oid": "62312b68d427ac733638947b"
+  },
+  "nombre": "acuario"
+},{
+  "_id": {
+    "$oid": "62312b79d427ac7336389482"
+  },
+  "nombre": "bosque"
+}]

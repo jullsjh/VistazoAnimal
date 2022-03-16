@@ -1,0 +1,12 @@
+[{
+  "_id": {
+    "$oid": "622cd42f8f22865a3a77f435"
+  },
+  "nombre": "Jairo",
+  "apellido1": "Gutierrez",
+  "especie_id": {
+    "$oid": "623127c6cf1b11cd393c1ade"
+  },
+  "estado": "asignado",
+  "apellido2": "Sivila"
+}]

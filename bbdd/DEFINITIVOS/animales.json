@@ -1,0 +1,53 @@
+[{
+  "_id": {
+    "$oid": "62312836cf1b11cd393c1ae4"
+  },
+  "nombre": "antilope",
+  "tamanno": 1500,
+  "peso": 950,
+  "especie_id": {
+    "$oid": "623127c6cf1b11cd393c1ade"
+  },
+  "habitat_id": {
+    "$oid": "62312b4ad427ac733638947a"
+  }
+},{
+  "_id": {
+    "$oid": "62312867cf1b11cd393c1ae9"
+  },
+  "nombre": "cuervo",
+  "tamanno": 78,
+  "peso": 2,
+  "especie_id": {
+    "$oid": "623127d8cf1b11cd393c1adf"
+  },
+  "habitat_id": {
+    "$oid": "62312b41d427ac7336389479"
+  }
+},{
+  "_id": {
+    "$oid": "62312890cf1b11cd393c1aee"
+  },
+  "nombre": "cocodrilo del nilo",
+  "tamanno": 400,
+  "peso": 750,
+  "especie_id": {
+    "$oid": "623127f3cf1b11cd393c1ae0"
+  },
+  "habitat_id": {
+    "$oid": "62312b68d427ac733638947b"
+  }
+},{
+  "_id": {
+    "$oid": "623128dacf1b11cd393c1af3"
+  },
+  "nombre": "insecto hoja",
+  "tamanno": 10,
+  "peso": 1,
+  "especie_id": {
+    "$oid": "6231280acf1b11cd393c1ae1"
+  },
+  "habitat_id": {
+    "$oid": "62312b79d427ac7336389482"
+  }
+}]

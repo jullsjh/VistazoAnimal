@@ -1,0 +1,19 @@
+[{
+  "_id": {
+    "$oid": "6231298acf1b11cd393c1b1e"
+  },
+  "nombre": "tallos tiernos",
+  "cantidad": 100
+},{
+  "_id": {
+    "$oid": "623129cecf1b11cd393c1b3d"
+  },
+  "nombre": "semillas",
+  "cantidad": 50
+},{
+  "_id": {
+    "$oid": "62312a18cf1b11cd393c1b4e"
+  },
+  "nombre": "pequeños anfibios/peces",
+  "cantidad": 125
+}]

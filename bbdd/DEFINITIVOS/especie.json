@@ -1,0 +1,41 @@
+[{
+  "_id": {
+    "$oid": "623127c6cf1b11cd393c1ade"
+  },
+  "nombre_vulgar": "mamiferos",
+  "descripcion": "especie de mamifeors",
+  "nombre_cientifico": "mammalia",
+  "comida_id": {
+    "$oid": "6231298acf1b11cd393c1b1e"
+  }
+},{
+  "_id": {
+    "$oid": "623127d8cf1b11cd393c1adf"
+  },
+  "nombre_vulgar": "aves",
+  "descripcion": "especie de aves",
+  "nombre_cientifico": "aves",
+  "comida_id": {
+    "$oid": "623129cecf1b11cd393c1b3d"
+  }
+},{
+  "_id": {
+    "$oid": "623127f3cf1b11cd393c1ae0"
+  },
+  "nombre_vulgar": "reptiles",
+  "descripcion": "especie de reptiles",
+  "nombre_cientifico": "reptilia",
+  "comida_id": {
+    "$oid": "62312a18cf1b11cd393c1b4e"
+  }
+},{
+  "_id": {
+    "$oid": "6231280acf1b11cd393c1ae1"
+  },
+  "nombre_vulgar": "insectos",
+  "descripcion": "especie de insectos",
+  "nombre_cientifico": "insecta",
+  "comida_id": {
+    "$oid": "622cf5d78f22865a3a77f48d"
+  }
+}]

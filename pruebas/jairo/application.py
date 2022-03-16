@@ -5,7 +5,7 @@ from urllib import response
 from bson import json_util
 from bson.objectid import ObjectId
 from functools import wraps
-from hashlib import algorithms_available
+from hashlib import algorithms_available, sha256
 from flask import Flask, request, abort, jsonify, Response
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -80,7 +80,7 @@ def login():
         #hashed_password = generate_password_hash(password)
         filter = {
             'email': email,
-            'pass': generate_password_hash(password)
+            'pass': password
         }
         user = db.usuarios.find_one(filter)
         if user:
@@ -112,7 +112,7 @@ def create_user():
         type_user = request.json['type']
         filter = {
             'email': email,
-            'pass': generate_password_hash(password)
+            'pass': sha256(password.encode('utf-8')).hexdigest()
         }
         user = db.usuarios.find_one(filter)
         if user:

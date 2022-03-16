@@ -1,5 +1,5 @@
 import requests, json, os
-
+from hashlib import sha256
 BASE_URL = 'http://127.0.0.1:5000/'
 path_base = os.path.dirname(os.path.abspath(__file__))
 token_user = None
@@ -11,14 +11,14 @@ def login_usuario():
     print("------------Login de usuario------------")
     email_usuario = input("Introduzca un email para loguearse en su cuenta: \n")
     pass_usuario = input("Introduzca una contraseña para loguearse en su cuenta \n")
+    hashed_password = sha256(pass_usuario.encode('utf-8')).hexdigest()
     login_usuario = {
         'email': email_usuario,
-        'pass': pass_usuario
+        'pass': hashed_password
     }
 
     auth = requests.post(f'{BASE_URL}login', json=login_usuario)
     token_user = auth.json()['token']
-    print(token_user)
     headers = {
         'Authorization': 'Bearer ' + token_user
     }
