@@ -1,9 +1,11 @@
-import requests, json, os
+from time import process_time_ns
+import requests, json, os, jwt
 from hashlib import sha256
 BASE_URL = 'http://127.0.0.1:5000/'
 path_base = os.path.dirname(os.path.abspath(__file__))
 token_user = None
 headers={}
+permisos = None
 
 def login_usuario():
     global token_user
@@ -19,6 +21,10 @@ def login_usuario():
 
     auth = requests.post(f'{BASE_URL}login', json=login_usuario)
     token_user = auth.json()['token']
+    # token_2 = jwt.decode(token_user)
+    # print(token_2)
+    #permisos_user = auth.json()['id']
+    print(token_user)
     headers = {
         'Authorization': 'Bearer ' + token_user
     }
@@ -26,6 +32,12 @@ def login_usuario():
 
 #--------------- Usuarios ---------------
 
+def obtener_permisos():
+    global permisos
+    r = requests.get(f'{BASE_URL}permisos', headers=headers)
+    permisos_json = r.json()
+    permisos = permisos_json['type']
+    return permisos
 
 #request para registrar un usuario
 def crear_usuario():
@@ -561,6 +573,7 @@ def obtener_especie_comida():
 
 #print(crear_usuario())
 login_usuario()
+print(obtener_permisos())
 print("1. Animales \n")
 print("2. Comida \n")
 print("3. Especie \n")
@@ -572,14 +585,19 @@ opcion = input("Escoja una tabla: \n")
 
 
 if int(opcion) == 1:
-    print(obtener_animales())
-    print(registrar_varios_animales())
-    print(crear_animal())
-    print(buscar_animal_id())
-    print(modificar_animal_id())
-    print(eliminar_animal_id())
+    if int(permisos) == 1:
+        print(obtener_animales())
+        print(registrar_varios_animales())
+        print(crear_animal())
+        print(buscar_animal_id())
+        print(modificar_animal_id())
+        print(eliminar_animal_id())
+    elif int(permisos) > 5:
+        print(obtener_animales())
+        print(buscar_animal_id())
 
-if int(opcion) == 2:
+
+elif int(opcion) == 2:
     print(obtener_comidas())
     print(crear_comida())
     print(modificar_comida_id())

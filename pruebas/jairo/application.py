@@ -146,6 +146,16 @@ def create_user():
         return jsonify({'ERROR': 'Error desconocido','ERROR_2':str(e)}), 400
 
 
+#Conseguir permisos de ususario
+@application.route('/permisos', methods=['GET'])
+@check_auth(UserRole.USUARIO)
+def get_permisos(user_id):
+    try:
+        usuario = db.usuarios.find_one({'_id':ObjectId(str(user_id))})
+        usuario_entero = json_util.dumps(usuario)
+        return usuario_entero
+    except Exception:
+        return jsonify({'ERROR': 'No se pudieron obtener los usuarios'}), 400
 
 
 #Conseguir todos los usuarios
@@ -815,10 +825,6 @@ def assign_specie_veterinary(user_id):
 
 
 
-
-#Funciones Julls -----------------------------------------------------------------------
-
-
 #--------------- ANIMALES ---------------
 
 #registrar varios animales con todos sus datos
@@ -861,7 +867,7 @@ def create_species(user_id):
 
 #Obtener todos los animales
 @application.route("/animals", methods=['GET'])
-@check_auth(UserRole.EMPLEADO)
+@check_auth(UserRole.USUARIO)
 def get_animals(user_id):
     try:
         animales = db.animales.find()
@@ -951,7 +957,7 @@ def update_animal(user_id, id):
     try:
         data = request.get_json()
         filter_animal = {
-            '_id': ObjectId(id)
+            '_id': ObjectId(str(id))
         }
         animal = db.animales.find_one(filter_animal)
         if data['nombre'] == "":
@@ -1204,7 +1210,7 @@ def update_food(user_id,id):
     try:
         data = request.get_json()
         filter = {
-            '_id': ObjectId(id)
+            '_id': ObjectId(str(id))
         }
         comida = db.comida.find_one(filter)
         if data['nombre'] == "":
