@@ -62,3 +62,19 @@ C:\Users\admin-dam2a\source\repos\EmpleadosGestion\EmpleadosGestion\obj\Debug\Em
 C:\Users\admin-dam2a\source\repos\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.exe
 C:\Users\admin-dam2a\source\repos\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.xml
 C:\Users\admin-dam2a\source\repos\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.pdb
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\bin\Debug\EmpleadosGestion.exe.config
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\bin\Debug\EmpleadosGestion.exe
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\bin\Debug\EmpleadosGestion.pdb
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\bin\Debug\EmpleadosGestion.xml
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.vbproj.AssemblyReference.cache
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.FrmAnadirAnimal.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.FrmConsultas.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.FrmNavEmpleados.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.FrmInicio.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.Login.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.Resources.resources
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.vbproj.GenerateResource.cache
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.vbproj.CoreCompileInputs.cache
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.exe
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.xml
+C:\Users\admin-dam2a\Desktop\Clase\VistazoAnimal\VISUAL BASIC\EmpleadosGestion\EmpleadosGestion\obj\Debug\EmpleadosGestion.pdb
